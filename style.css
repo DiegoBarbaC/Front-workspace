@@ -19,7 +19,7 @@ li {
 	--lato: 'Lato', sans-serif;
 
 	--light: #F9F9F9;
-	--blue: #3C91E6;
+	--blue: #ff5900;
 	--light-blue: #CFE8FF;
 	--grey: #eee;
 	--dark-grey: #AAAAAA;
@@ -27,7 +27,7 @@ li {
 	--red: #DB504A;
 	--yellow: #FFCE26;
 	--light-yellow: #FFF2C6;
-	--orange: #FD7238;
+	--orange: #ff5900;
 	--light-orange: #FFE0D3;
 }
 
@@ -44,6 +44,11 @@ body.dark {
 body {
 	background: var(--grey);
 	overflow-x: hidden;
+}
+#logo{
+	width: 100%;
+    height: auto;
+    object-fit: contain;
 }
 
 
@@ -297,7 +302,7 @@ body {
 	border-radius: 50%;
 	transition: all .3s ease;
 }
-#content nav #switch-mode:checked + .switch-mode::before {
+#content nav input:checked + .switch-mode::before {
 	left: calc(100% - (25px - 4px) - 2px);
 }
 /* NAVBAR */
