@@ -25,9 +25,16 @@
 		.fc-button {
 			background: var(--blue) !important;
 			border: none !important;
+			transition: all 0.3s ease !important;
 		}
 		.fc-button:hover {
 			background: var(--dark-blue) !important;
+			color: var(--orange) !important;
+			transform: translateY(-2px);
+		}
+		.fc-button-active {
+			background: var(--dark-blue) !important;
+			color: var(--orange) !important;
 		}
 		.fc-day {
 			background: var(--light);
@@ -52,6 +59,12 @@
 		}
 		body.dark .fc-button {
 			color: var(--light) !important;
+		}
+		body.dark .fc-button:hover {
+			color: var(--orange) !important;
+		}
+		body.dark .fc-button-active {
+			color: var(--orange) !important;
 		}
 		body.dark .fc-daygrid-event {
 			background: var(--blue);
@@ -201,6 +214,11 @@
 				eventClick: function(info) {
 					if (confirm('¿Desea eliminar este evento?')) {
 						info.event.remove();
+					}
+				},
+				eventDrop: function(info) {
+					if (!confirm('¿Está seguro de mover el evento "' + info.event.title + '" a ' + info.event.start.toLocaleDateString() + '?')) {
+						info.revert();
 					}
 				}
 			});

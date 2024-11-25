@@ -51,10 +51,6 @@ body {
     object-fit: contain;
 }
 
-
-
-
-
 /* SIDEBAR */
 #sidebar {
 	position: fixed;
@@ -164,10 +160,6 @@ body {
 }
 /* SIDEBAR */
 
-
-
-
-
 /* CONTENT */
 #content {
 	position: relative;
@@ -179,9 +171,6 @@ body {
 	width: calc(100% - 60px);
 	left: 60px;
 }
-
-
-
 
 /* NAVBAR */
 #content nav {
@@ -307,10 +296,6 @@ body {
 }
 /* NAVBAR */
 
-
-
-
-
 /* MAIN */
 #content main {
 	width: 100%;
@@ -361,9 +346,6 @@ body {
 	font-weight: 500;
 }
 
-
-
-
 #content main .box-info {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -407,10 +389,6 @@ body {
 #content main .box-info li .text p {
 	color: var(--dark);	
 }
-
-
-
-
 
 #content main .table-data {
 	display: flex;
@@ -490,7 +468,6 @@ body {
 	background: var(--orange);
 }
 
-
 #content main .table-data .todo {
 	flex-grow: 1;
 	flex-basis: 300px;
@@ -523,13 +500,152 @@ body {
 /* MAIN */
 /* CONTENT */
 
+/* Workspace Cards Styles */
+.workspace-cards {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 12px;
+	padding: 15px;
+	width: 100%;
+	max-width: 100%;
+}
 
+.card {
+	background: var(--light);
+	border-radius: 15px;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 0;
+}
 
+.card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+	border: 2px solid var(--black);
+}
 
+.card-image {
+	width: 100%;
+	height: 70px;
+	overflow: hidden;
+	position: relative;
+}
 
+.card-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.3s ease;
+}
 
+.card:hover .card-image img {
+	transform: scale(1.05);
+}
 
+.card-content {
+	padding: 12px;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
 
+.card-content h3 {
+	color: var(--dark);
+	font-size: 1rem;
+	font-weight: 600;
+	margin-bottom: 3px;
+}
+
+.card-content p {
+	color: var(--dark-grey);
+	font-size: 0.8rem;
+	line-height: 1.4;
+	flex-grow: 1;
+}
+
+/* Dark mode styles for cards */
+body.dark .card {
+	background: var(--dark);
+	border-color: var(--grey);
+}
+
+body.dark .card-content h3 {
+	color: var(--light);
+}
+
+body.dark .card-content p {
+	color: var(--grey);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1400px) {
+	.workspace-cards {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+@media screen and (max-width: 1000px) {
+	.workspace-cards {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media screen and (max-width: 768px) {
+	.workspace-cards {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 10px;
+	}
+}
+
+@media screen and (max-width: 480px) {
+	.workspace-cards {
+		grid-template-columns: 1fr;
+		padding: 10px;
+	}
+}
+
+.drag-handle {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: move;
+    padding: 5px;
+    color: var(--dark-grey);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+}
+
+.card:hover .drag-handle {
+    opacity: 1;
+}
+
+body.dark .drag-handle {
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--grey);
+}
+
+.sortable-drag {
+    opacity: 0.8;
+    transform: scale(0.95);
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+}
+
+.card {
+    position: relative;
+}
 
 @media screen and (max-width: 768px) {
 	#sidebar {
@@ -545,11 +661,6 @@ body {
 		display: none;
 	}
 }
-
-
-
-
-
 
 @media screen and (max-width: 576px) {
 	#content nav form .form-input input {
