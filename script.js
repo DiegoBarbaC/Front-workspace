@@ -270,10 +270,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        // Si no hay token, redirigir al login
         window.location.replace('login.html');
         return;
     }
+
+    // Cargar las tarjetas
+    loadCardsFromAPI();
 
     // TOGGLE SIDEBAR
     const menuBar = document.querySelector('#content nav .bx.bx-menu');
@@ -283,12 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
         menuBar.addEventListener('click', function () {
             sidebar.classList.toggle('hide');
         });
-    }
-
-    // Clear existing static cards
-    const grid = document.getElementById('sortable-grid');
-    if (grid) {
-        loadCardsFromAPI();
     }
 
     const searchButton = document.querySelector('#content nav form .form-input button');
@@ -333,10 +329,35 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
 
-// Función para cerrar sesión
-function logout() {
-    localStorage.removeItem('token');
-    window.location.replace('login.html');
-}
+    // Función para cerrar sesión
+    function logout() {
+        // Mostrar confirmación antes de cerrar sesión
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: "¿Está seguro que desea cerrar sesión?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Limpiar el token del localStorage
+                localStorage.removeItem('token');
+                // Redirigir al login
+                window.location.href = 'login.html';
+            }
+        });
+    }
+
+    // Agregar evento de click al botón de logout
+    const logoutButton = document.querySelector('.logout');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+});
