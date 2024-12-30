@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si ya hay un token válido
     const token = localStorage.getItem('token');
     if (token) {
-        window.location.replace('index.html');
+        window.location.replace('../Front-workspace/index.html');
         return;
     }
 
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Token a guardar:', tokenToStore);
                 localStorage.setItem('token', tokenToStore);
 
-                window.location.replace('index.html');
+                window.location.replace('../index.html');
             } else {
                 errorMessage.textContent = data.msg || data.message || 'Error al iniciar sesión';
                 errorMessage.style.display = 'block';

@@ -535,6 +535,7 @@ body {
 	height: 70px;
 	overflow: hidden;
 	position: relative;
+	background-color: #ff5900;
 }
 
 .card-image img {

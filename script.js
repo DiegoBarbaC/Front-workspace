@@ -47,7 +47,7 @@ async function loadCardsFromAPI() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('login.html');
+            window.location.replace('../Front-workspace/login/login.html');
             return;
         }
 
@@ -70,7 +70,7 @@ async function loadCardsFromAPI() {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                window.location.replace('login.html');
+                window.location.replace('../Front-workspace/login/login.html');
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(responseData)}`);
@@ -142,7 +142,7 @@ async function saveCardOrder() {
         if (result.isConfirmed) {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '/login.html';
+                window.location.href = '../Front-workspace/login/login.html';
                 return;
             }
 
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('login.html');
+        window.location.replace('../Front-workspace/login/login.html');
         return;
     }
 
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Limpiar el token del localStorage
                 localStorage.removeItem('token');
                 // Redirigir al login
-                window.location.href = 'login.html';
+                window.location.href = '../Front-workspace/login/login.html';
             }
         });
     }
