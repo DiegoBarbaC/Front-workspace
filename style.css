@@ -45,6 +45,7 @@ body {
 	background: var(--grey);
 	overflow-x: hidden;
 }
+
 #logo{
 	width: 100%;
     height: auto;

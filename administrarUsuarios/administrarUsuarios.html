@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <!-- My CSS -->
+    <link rel="stylesheet" href="../style.css">
+
+    <title>Workspace CAA</title>
+
+    /* Estilos para la tabla */
+    <style>
+table {
+    width: 100%; /* Ancho completo */
+    border-collapse: collapse; /* Colapsar bordes */
+    margin: 20px 0; /* Margen superior e inferior */
+    font-size: 1em; /* Tamaño de fuente */
+    font-family: Arial, sans-serif; /* Fuente */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra */
+}
+
+th, td {
+    padding: 12px 15px; /* Espaciado interno */
+    text-align: left; /* Alinear texto a la izquierda */
+    border-bottom: 1px solid #ddd; /* Línea inferior */
+}
+
+th {
+    background-color: #f2f2f2; /* Color de fondo de los encabezados */
+    color: #333; /* Color del texto de los encabezados */
+}
+
+tr:hover {
+    background-color: #f5f5f5; /* Color de fondo al pasar el mouse */
+}
+
+img {
+    max-width: 100px; /* Ancho máximo de las imágenes */
+    height: auto; /* Altura automática para mantener la proporción */
+    border-radius: 5px; /* Bordes redondeados */
+}
+/* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Cambiado de auto a hidden para quitar la barra de desplazamiento */
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 2% auto; /* Cambiado de 5% a 2% para que aparezca más arriba */
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    position: relative; /* Para posicionamiento absoluto del botón */
+    max-height: 90vh; /* Altura máxima del 90% de la ventana */
+    overflow-y: auto; /* Permitir scroll dentro del modal si es necesario */
+}
+
+#imagePreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+#previewImg {
+    max-width: 300px;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.modal-footer button {
+    margin-left: 10px;
+}
+
+body.modal-open {
+    overflow: hidden; /* Evita el scroll del body cuando el modal está abierto */
+}
+
+.close {
+    color: #aaa; /* Color del botón de cerrar */
+    float: right; /* Alinear a la derecha */
+    font-size: 28px; /* Tamaño de fuente */
+    font-weight: bold; /* Negrita */
+}
+
+.close:hover,
+.close:focus {
+    color: black; /* Color al pasar el mouse */
+    text-decoration: none; /* Sin subrayado */
+    cursor: pointer; /* Cambiar cursor */
+}
+
+h2 {
+    margin: 0; /* Sin margen en el encabezado */
+    padding-bottom: 10px; /* Espacio inferior */
+}
+
+label {
+    display: block; /* Mostrar como bloque */
+    margin-top: 10px; /* Margen superior */
+}
+
+input[type="text"] {
+    width: 100%; /* Ancho completo */
+    padding: 10px; /* Espaciado interno */
+    margin-top: 5px; /* Espacio superior */
+    border: 1px solid #ccc; /* Borde */
+    border-radius: 4px; /* Bordes redondeados */
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+}
+
+button {
+    background-color: #4CAF50; /* Color de fondo del botón */
+    color: white; /* Color del texto */
+    padding: 10px 15px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar cursor */
+    margin-top: 10px; /* Espacio superior */
+}
+
+button:hover {
+    background-color: #45a049; /* Color al pasar el mouse */
+}
+.delete-button:hover {
+    background-color: #c9302c; /* Color al pasar el mouse */
+}
+.delete-button {
+    margin-left: 10px; /* Ajusta el valor según sea necesario */
+    background-color: red;
+}
+
+.btn-add {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-add i {
+    font-size: 20px;
+}
+
+.btn-add:hover {
+    background-color: #45a049;
+}
+
+.head-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#createImagePreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+#createPreviewImg {
+    max-width: 300px;
+    max-height: 300px;
+    object-fit: contain;
+    display: none;
+}
+</style>
+</head>
+<body>
+
+
+    <!-- SIDEBAR -->
+    <section id="sidebar">
+        <a href="#" class="brand">
+            <img src="../img/CAA_2023-03.png" alt="" id="logo">
+            
+        </a>
+        <span class="text">Workspace</span>
+
+        <ul class="side-menu top">
+            <li>
+                <a href="../index.html">
+                    <i class='bx bxs-dashboard'></i>
+                    <span class="text">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="../calendario/calendario.html">
+                    <i class='bx bxs-calendar'></i>
+                    <span class="text">Calendario</span>
+                </a>
+            </li>
+            <li>
+                <a href="../chatbot/chatbot.html">
+                    <i class='bx bx-bot'></i>
+                    <span class="text">Chatbot</span>
+                </a>
+            </li>
+            <li>
+                <a href="../notas/notas.html">
+                    <i class='bx bxs-note'></i>
+                    <span class="text">Notas</span>
+                </a>
+            </li>
+        </ul>
+        <ul class="side-menu">
+            <li>
+                <a href="../configPerfil/configPerfil.html">
+                    <i class='bx bxs-user-circle'></i>
+                    <span class="text">Configurar perfil</span>
+                </a>
+            </li>
+            <li>
+                <a href="../editarSecciones/editarSecciones.html">
+                    <i class='bx bxs-edit'></i>
+                    <span class="text">Editar secciones</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="./administrarUsuarios.html">
+                    <i class='bx bxs-group'></i>
+                    <span class="text">Administrar usuarios</span>
+                </a>
+            </li>
+            <li>
+                <a href="../login/login.html" class="logout">
+                    <i class='bx bxs-log-out-circle'></i>
+                    <span class="text">Cerrar sesión</span>
+                </a>
+            </li>
+        </ul>
+    </section>
+    <!-- SIDEBAR -->
+
+
+
+    <!-- CONTENT -->
+    <section id="content">
+        <!-- NAVBAR -->
+        <nav>
+            
+            <a href="#" class="nav-link">Categories</a>
+            <form action="#">
+                <div class="form-input">
+                    <input type="search" placeholder="Search...">
+                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+                </div>
+            </form>
+            <input type="checkbox" id="switch-mode" hidden>
+            <label for="switch-mode" class="switch-mode"></label>
+            <a href="#" class="notification">
+                <i class='bx bxs-bell' ></i>
+                <span class="num">8</span>
+            </a>
+            <a href="#" class="profile">
+                <img src="img/people.png">
+            </a>
+        </nav>
+        <!-- NAVBAR -->
+        
+        <!-- MAIN -->
+        <main>
+            <div class="head-title">
+                <div class="left">
+                    <h1>Administrar Usuarios</h1>
+                </div>
+                <div class="right">
+                    <button id="openCreateModal" class="btn-add">
+                        <i class='bx bx-plus'></i>
+                        Agregar Usuario
+                    </button>
+                </div>
+            </div>
+
+            <div>
+
+                <h1>Usuarios</h1>
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                 
+                                <th>Email</th>
+                                <th>Es Admin</th>
+                                <th>Puede Editar</th>
+                                <th>Acciones</th>
+                                 
+                            </tr>
+                        </thead>
+                        <tbody>
+            <!-- Las filas de la tabla se llenarán con JavaScript -->
+        </tbody>
+    </table>
+
+
+    <!-- Modal para editar sección -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Editar Usuario</h2>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" required>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="editEsAdmin"> Es Administrador
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="editPuedeEditar"> Puede Editar
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeModal()">Cancelar</button>
+                <button type="button" onclick="saveChanges()">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <!-- Modal para crear nuevo usuario -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeCreateModal">&times;</span>
+            <h2>Crear Nuevo Usuario</h2>
+            <form id="createForm">
+                <div class="form-group">
+                    <label for="createEmail">Email:</label>
+                    <input type="email" id="createEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="createEsAdmin"> Es Administrador
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="createPuedeEditar"> Puede Editar
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeCreateModal()">Cancelar</button>
+                    <button type="button" onclick="createUser()">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+                
+                
+                
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+            
+        </main>
+        <!-- MAIN -->
+    </section>
+    <!-- CONTENT -->
+    
+    <script src="../script.js"></script>
+    
+    <script src="administrarUsuarios.js"></script>
+</body>
+</html>

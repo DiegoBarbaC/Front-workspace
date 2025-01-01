@@ -13,12 +13,24 @@ allSideMenu.forEach(item=> {
 
 // Handle card clicks (to prevent conflict with dragging)
 function handleCardClick(event, url) {
-    // If we're dragging, don't open the link
-    if (event.target.closest('.drag-handle')) {
+    // Si el clic fue en el manejador de arrastre o en un botón, no abrir el enlace
+    if (event.target.closest('.drag-handle') || event.target.tagName === 'BUTTON') {
         event.preventDefault();
         return;
     }
-    window.open(url, '_blank');
+    
+    // Crear el enlace programáticamente
+    const newWindow = window.open();
+    if (newWindow) {
+        // Inmediatamente enfocar de vuelta a la ventana actual
+        window.focus();
+        // Establecer la URL de la nueva pestaña
+        newWindow.location.href = url;
+    }
+    
+    // Prevenir el comportamiento por defecto
+    event.preventDefault();
+    return false;
 }
 
 // Function to create a card element
@@ -26,7 +38,14 @@ function createCard(cardData) {
     const card = document.createElement('div');
     card.className = 'card card-section';
     card.setAttribute('data-id', cardData.id);
-    card.onclick = (event) => handleCardClick(event, cardData.url);
+    card.style.cursor = 'pointer';
+    
+    // Prevenir el comportamiento por defecto del enlace
+    card.addEventListener('click', (event) => {
+        event.preventDefault();
+        handleCardClick(event, cardData.url);
+        return false;
+    });
 
     card.innerHTML = `
         <div class="drag-handle">⋮⋮</div>
