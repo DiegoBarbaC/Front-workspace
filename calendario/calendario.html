@@ -70,6 +70,162 @@
 			background: var(--blue);
 			border-color: var(--blue);
 		}
+		/* Estilos para el modal */
+		.modal {
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0,0,0,0.5);
+			overflow-y: auto;
+			padding: 20px;
+		}
+
+		.modal-content {
+			background-color: #fff;
+			margin: 20px auto;
+			padding: 20px;
+			border-radius: 10px;
+			width: 90%;
+			max-width: 600px;
+			position: relative;
+			max-height: 90vh;
+			overflow-y: auto;
+		}
+
+		@media (min-height: 600px) {
+			.modal-content {
+				margin: 5vh auto;
+			}
+		}
+
+		.modal-header {
+			position: sticky;
+			top: 0;
+			background-color: #fff;
+			z-index: 1;
+			padding-bottom: 15px;
+			margin-bottom: 20px;
+			border-bottom: 1px solid #ddd;
+		}
+
+		body.dark .modal-header {
+			background-color: var(--dark);
+			border-color: var(--grey);
+		}
+
+		.close {
+			position: absolute;
+			right: 20px;
+			top: 20px;
+			font-size: 28px;
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		.modal-footer {
+			margin-top: 20px;
+			text-align: right;
+		}
+
+		.btn-save {
+			background-color: var(--blue);
+			color: white;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			margin-left: 10px;
+		}
+
+		.btn-cancel {
+			background-color: #fff;
+			color: var(--blue);
+			padding: 10px 20px;
+			border: 1px solid var(--blue);
+			border-radius: 4px;
+			cursor: pointer;
+		}
+
+		.btn-add {
+			background-color: var(--blue);
+			color: white;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		.btn-add i {
+			font-size: 20px;
+		}
+
+		/* Dark mode styles */
+		body.dark .modal-content {
+			background-color: var(--dark);
+			color: var(--light);
+		}
+
+		body.dark .form-group input,
+		body.dark .form-group textarea,
+		body.dark .form-group select {
+			background-color: var(--dark);
+			color: var(--light);
+			border-color: var(--grey);
+		}
+
+		body.dark .btn-cancel {
+			background-color: var(--dark);
+			color: var(--light);
+			border-color: var(--light);
+		}
+
+		/* Estilos para los checkboxes de usuarios */
+		.checkbox-container {
+			max-height: 200px;
+			overflow-y: auto;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			padding: 10px;
+		}
+
+		.select-all-container {
+			padding-bottom: 10px;
+			margin-bottom: 10px;
+			border-bottom: 1px solid #ddd;
+		}
+
+		.usuarios-list {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.usuario-checkbox {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.usuario-checkbox input[type="checkbox"] {
+			width: auto;
+			margin: 0;
+		}
+
+		/* Dark mode styles */
+		body.dark .checkbox-container {
+			border-color: var(--grey);
+		}
+
+		body.dark .select-all-container {
+			border-color: var(--grey);
+		}
 	</style>
 </head>
 <body>
@@ -78,7 +234,7 @@
 	<!-- SIDEBAR -->
 	<section id="sidebar">
 		<a href="#" class="brand">
-			<img src="./img/CAA_2023-03.png" alt="" id="logo">
+			<img src="../img/CAA_2023-03.png" alt="" id="logo">
 			
 		</a>
 		<span class="text">Workspace</span>
@@ -167,7 +323,62 @@
 		<!-- NAVBAR -->
 		
 		<main>
-			<div id="calendar"></div>
+			<div class="head-title">
+				<div class="left">
+					<h1>Calendario</h1>
+				</div>
+				<button class="btn-add" onclick="openCreateModal()">
+					<i class='bx bx-plus'></i>
+					<span>Agregar Evento</span>
+				</button>
+			</div>
+		
+			<!-- Calendario aquí -->
+			<div id='calendar'></div>
+		
+			<!-- Modal para crear evento -->
+			<div id="createModal" class="modal">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h2>Crear Nuevo Evento</h2>
+						<span class="close" onclick="closeCreateModal()">&times;</span>
+					</div>
+					<form id="createEventForm">
+						<div class="form-group">
+							<label for="titulo">Título*:</label>
+							<input type="text" id="titulo" name="titulo" required>
+						</div>
+						<div class="form-group">
+							<label for="descripcion">Descripción*:</label>
+							<textarea id="descripcion" name="descripcion" required></textarea>
+						</div>
+						<div class="form-group">
+							<label for="fechaInicio">Fecha de Inicio*:</label>
+							<input type="datetime-local" id="fechaInicio" name="fechaInicio" required>
+						</div>
+						<div class="form-group">
+							<label for="fechaFin">Fecha de Fin*:</label>
+							<input type="datetime-local" id="fechaFin" name="fechaFin" required>
+						</div>
+						<div class="form-group">
+                            <label>Usuarios*:</label>
+                            <div class="checkbox-container">
+                                <div class="select-all-container">
+                                    <input type="checkbox" id="selectAll" onchange="toggleAllUsers()">
+                                    <label for="selectAll">Seleccionar todos</label>
+                                </div>
+                                <div id="usuariosList" class="usuarios-list">
+                                    <!-- Los checkboxes de usuarios se cargarán dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+						<div class="modal-footer">
+							<button type="submit" class="btn-save">Guardar</button>
+							<button type="button" class="btn-cancel" onclick="closeCreateModal()">Cancelar</button>
+						</div>
+					</form>
+				</div>
+			</div>
 		</main>
 	</section>
 	<!-- CONTENT -->

@@ -8,6 +8,7 @@
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<!-- My CSS -->
 	<link rel="stylesheet" href="../style.css">
+	<link rel="stylesheet" href="configperfil.css">
 
 	<title>Workspace CAA</title>
 </head>
@@ -17,7 +18,7 @@
 	<!-- SIDEBAR -->
 	<section id="sidebar">
 		<a href="#" class="brand">
-			<img src="./img/CAA_2023-03.png" alt="" id="logo">
+			<img src="../img/CAA_2023-03.png" alt="" id="logo">
 			
 		</a>
 		<span class="text">Workspace</span>
@@ -108,31 +109,81 @@
 		<main>
 			<div class="head-title">
 				<div class="left">
-					<h1>Página de Inicio</h1>
+					<h1>Configuración de Perfil</h1>
 					<ul class="breadcrumb">
 						<li>
-							<a href="#">Dashboard</a>
+							<a href="../index.html">Dashboard</a>
 						</li>
 						<li><i class='bx bx-chevron-right' ></i></li>
 						<li>
-							<a class="active" href="#">Accesos</a>
+							<a class="active" href="#">Configurar Perfil</a>
 						</li>
 					</ul>
 				</div>
-				
 			</div>
-			
-				
-				
-				
+
+			<div class="profile-container">
+				<div class="profile-header">
+					<div class="profile-image-container">
+						<img id="profileImage" src="../img/anonymous.png" alt="Foto de perfil">
+						<div class="image-upload">
+							<label for="imageInput" class="upload-button">
+								<i class='bx bx-camera'></i>
+								Cambiar foto
+							</label>
+							<input type="file" id="imageInput" accept="image/*" style="display: none;">
+						</div>
+					</div>
+					<div class="profile-info">
+						<h2 id="userEmail">correo@ejemplo.com</h2>
+					</div>
+				</div>
+
+				<div class="profile-form">
+					<form id="profileForm">
+						<div class="form-group">
+							<label for="birthday">Fecha de Nacimiento</label>
+							<input type="date" id="birthday" name="birthday">
+						</div>
+
+						<div class="form-group">
+							<label for="currentPassword">Contraseña Actual</label>
+							<div class="password-input">
+								<input type="password" id="currentPassword" name="currentPassword">
+								<i class='bx bx-show password-toggle'></i>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="newPassword">Nueva Contraseña</label>
+							<div class="password-input">
+								<input type="password" id="newPassword" name="newPassword">
+								<i class='bx bx-show password-toggle'></i>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="confirmPassword">Confirmar Nueva Contraseña</label>
+							<div class="password-input">
+								<input type="password" id="confirmPassword" name="confirmPassword">
+								<i class='bx bx-show password-toggle'></i>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<button type="submit" class="btn-save">Guardar Cambios</button>
+						</div>
+					</form>
+				</div>
 			</div>
-			
 		</main>
 		<!-- MAIN -->
 	</section>
 	<!-- CONTENT -->
 
 
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src="../script.js"></script>
+	<script src="configPerfil.js"></script>
 </body>
 </html>

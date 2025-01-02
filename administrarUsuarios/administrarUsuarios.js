@@ -124,19 +124,17 @@ function saveChanges() {
     const admin = document.getElementById('editEsAdmin').checked;
     const editar = document.getElementById('editPuedeEditar').checked;
 
-    const data = {
-        email: email,
-        admin: admin,
-        editar: editar
-    };
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('admin', admin);
+    formData.append('editar', editar);
 
     fetch('http://127.0.0.1:5000/updateUser', {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json',
             'Authorization': authToken
         },
-        body: JSON.stringify(data)
+        body: formData
     })
     .then(response => {
         if (!response.ok) {

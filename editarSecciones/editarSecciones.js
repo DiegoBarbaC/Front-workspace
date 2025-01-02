@@ -44,7 +44,7 @@ async function loadCardsFromAPI() {
                 row.insertCell(0).innerText = section.titulo; // Título
                 row.insertCell(1).innerText = section.descripcion; // Descripción
                 row.insertCell(2).innerHTML = `<a href="${section.link}">${section.link}</a>`; // Link
-                row.insertCell(3).innerHTML = section.imagen ? `<img src="data:image/jpeg;base64,${section.imagen}" alt="${section.titulo}" style="width: 50px; height: auto;">` : 'Sin imagen'; // Imagen
+                row.insertCell(3).innerHTML = section.imagen ? `<img class="section-image" src="data:image/jpeg;base64,${section.imagen}" alt="${section.titulo}" style="width: 50px; height: auto;">` : 'Sin imagen'; // Imagen
                 
                 // Crear el botón de editar
                 const editButton = document.createElement('button');
