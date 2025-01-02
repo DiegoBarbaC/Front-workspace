@@ -1,366 +1,516 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<!-- My CSS -->
-	<link rel="stylesheet" href="../style.css">
-	<!-- Boxicons -->
-	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
-	<!-- FullCalendar CSS -->
-	<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
-	<title>Workspace CAA</title>
-	<style>
-		#calendar {
-			margin: 20px;
-			padding: 20px;
-			background: var(--light);
-			border-radius: 20px;
-			height: 800px;
-		}
-		.fc-toolbar-title {
-			color: var(--dark);
-		}
-		.fc-button {
-			background: var(--blue) !important;
-			border: none !important;
-			transition: all 0.3s ease !important;
-		}
-		.fc-button:hover {
-			background: var(--dark-blue) !important;
-			color: var(--orange) !important;
-			transform: translateY(-2px);
-		}
-		.fc-button-active {
-			background: var(--dark-blue) !important;
-			color: var(--orange) !important;
-		}
-		.fc-day {
-			background: var(--light);
-		}
-		.fc-day-today {
-			background: var(--grey) !important;
-		}
-		/* Dark mode styles */
-		body.dark #calendar {
-			background: var(--dark);
-		}
-		body.dark .fc-toolbar-title,
-		body.dark .fc-col-header-cell-cushion,
-		body.dark .fc-daygrid-day-number {
-			color: var(--light);
-		}
-		body.dark .fc-day {
-			background: var(--dark);
-		}
-		body.dark .fc-day-today {
-			background: #eee !important;
-		}
-		body.dark .fc-button {
-			color: var(--light) !important;
-		}
-		body.dark .fc-button:hover {
-			color: var(--orange) !important;
-		}
-		body.dark .fc-button-active {
-			color: var(--orange) !important;
-		}
-		body.dark .fc-daygrid-event {
-			background: var(--blue);
-			border-color: var(--blue);
-		}
-		/* Estilos para el modal */
-		.modal {
-			display: none;
-			position: fixed;
-			z-index: 1000;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			background-color: rgba(0,0,0,0.5);
-			overflow-y: auto;
-			padding: 20px;
-		}
+    <!-- My CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+    <title>Workspace CAA</title>
+    <style>
+        #calendar {
+            margin: 20px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 20px;
+            height: 800px;
+        }
+        .fc-toolbar-title {
+            color: var(--dark);
+        }
+        .fc-button {
+            background: var(--blue) !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+        .fc-button:hover {
+            background: var(--dark-blue) !important;
+            color: var(--orange) !important;
+            transform: translateY(-2px);
+        }
+        .fc-button-active {
+            background: var(--dark-blue) !important;
+            color: var(--orange) !important;
+        }
+        .fc-day {
+            background: var(--light);
+        }
+        .fc-day-today {
+            background: var(--grey) !important;
+        }
+        /* Dark mode styles */
+        body.dark #calendar {
+            background: var(--dark);
+        }
+        body.dark .fc-toolbar-title,
+        body.dark .fc-col-header-cell-cushion,
+        body.dark .fc-daygrid-day-number {
+            color: var(--light);
+        }
+        body.dark .fc-day {
+            background: var(--dark);
+        }
+        body.dark .fc-day-today {
+            background: #eee !important;
+        }
+        body.dark .fc-button {
+            color: var(--light) !important;
+        }
+        body.dark .fc-button:hover {
+            color: var(--orange) !important;
+        }
+        body.dark .fc-button-active {
+            color: var(--orange) !important;
+        }
+        body.dark .fc-daygrid-event {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+            padding: 20px;
+        }
 
-		.modal-content {
-			background-color: #fff;
-			margin: 20px auto;
-			padding: 20px;
-			border-radius: 10px;
-			width: 90%;
-			max-width: 600px;
-			position: relative;
-			max-height: 90vh;
-			overflow-y: auto;
-		}
+        .modal-content {
+            background-color: #fff;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
 
-		@media (min-height: 600px) {
-			.modal-content {
-				margin: 5vh auto;
-			}
-		}
+        @media (min-height: 600px) {
+            .modal-content {
+                margin: 5vh auto;
+            }
+        }
 
-		.modal-header {
-			position: sticky;
-			top: 0;
-			background-color: #fff;
-			z-index: 1;
-			padding-bottom: 15px;
-			margin-bottom: 20px;
-			border-bottom: 1px solid #ddd;
-		}
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
 
-		body.dark .modal-header {
-			background-color: var(--dark);
-			border-color: var(--grey);
-		}
+        body.dark .modal-header {
+            background-color: var(--dark);
+            border-color: var(--grey);
+        }
 
-		.close {
-			position: absolute;
-			right: 20px;
-			top: 20px;
-			font-size: 28px;
-			font-weight: bold;
-			cursor: pointer;
-		}
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-		.modal-footer {
-			margin-top: 20px;
-			text-align: right;
-		}
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
 
-		.btn-save {
-			background-color: var(--blue);
-			color: white;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			margin-left: 10px;
-		}
+        .btn-save {
+            background-color: var(--blue);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
 
-		.btn-cancel {
-			background-color: #fff;
-			color: var(--blue);
-			padding: 10px 20px;
-			border: 1px solid var(--blue);
-			border-radius: 4px;
-			cursor: pointer;
-		}
+        .btn-cancel {
+            background-color: #fff;
+            color: var(--blue);
+            padding: 10px 20px;
+            border: 1px solid var(--blue);
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-		.btn-add {
-			background-color: var(--blue);
-			color: white;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			gap: 5px;
-		}
+        .btn-add {
+            background-color: var(--blue);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-		.btn-add i {
-			font-size: 20px;
-		}
+        .btn-add i {
+            font-size: 20px;
+        }
 
-		/* Dark mode styles */
-		body.dark .modal-content {
-			background-color: var(--dark);
-			color: var(--light);
-		}
+        /* Dark mode styles */
+        body.dark .modal-content {
+            background-color: var(--dark);
+            color: var(--light);
+        }
 
-		body.dark .form-group input,
-		body.dark .form-group textarea,
-		body.dark .form-group select {
-			background-color: var(--dark);
-			color: var(--light);
-			border-color: var(--grey);
-		}
+        body.dark .form-group input,
+        body.dark .form-group textarea,
+        body.dark .form-group select {
+            background-color: var(--dark);
+            color: var(--light);
+            border-color: var(--grey);
+        }
 
-		body.dark .btn-cancel {
-			background-color: var(--dark);
-			color: var(--light);
-			border-color: var(--light);
-		}
+        body.dark .btn-cancel {
+            background-color: var(--dark);
+            color: var(--light);
+            border-color: var(--light);
+        }
 
-		/* Estilos para los checkboxes de usuarios */
-		.checkbox-container {
-			max-height: 200px;
-			overflow-y: auto;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-			padding: 10px;
-		}
+        /* Estilos para los checkboxes de usuarios */
+        .checkbox-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
 
-		.select-all-container {
-			padding-bottom: 10px;
-			margin-bottom: 10px;
-			border-bottom: 1px solid #ddd;
-		}
+        .select-all-container {
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
 
-		.usuarios-list {
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
+        .usuarios-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-		.usuario-checkbox {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
+        .usuario-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-		.usuario-checkbox input[type="checkbox"] {
-			width: auto;
-			margin: 0;
-		}
+        .usuario-checkbox input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
 
-		/* Dark mode styles */
-		body.dark .checkbox-container {
-			border-color: var(--grey);
-		}
+        /* Dark mode styles */
+        body.dark .checkbox-container {
+            border-color: var(--grey);
+        }
 
-		body.dark .select-all-container {
-			border-color: var(--grey);
-		}
-	</style>
+        body.dark .select-all-container {
+            border-color: var(--grey);
+        }
+
+        /* Estilos para el modal de eventos */
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Hover effects */
+        .btn-delete:hover { background-color: #c82333; }
+        .btn-edit:hover { background-color: #e0a800; }
+        .btn-save:hover { background-color: #218838; }
+        .btn-cancel:hover { background-color: #5a6268; }
+
+        /* Dark mode */
+        body.dark .btn-edit {
+            background-color: #856404;
+            color: white;
+        }
+        
+        body.dark .btn-edit:hover {
+            background-color: #6c5304;
+        }
+
+        /* Estilos del modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .usuarios-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* Dark mode para el modal */
+        body.dark .modal-content {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+
+        body.dark .close {
+            color: var(--light);
+        }
+
+        body.dark .close:hover {
+            color: var(--grey);
+        }
+
+        body.dark .form-group input,
+        body.dark .form-group textarea {
+            background-color: var(--dark);
+            color: var(--light);
+            border-color: var(--grey);
+        }
+
+        body.dark .usuarios-list {
+            border-color: var(--grey);
+        }
+    </style>
 </head>
 <body>
 
 
-	<!-- SIDEBAR -->
-	<section id="sidebar">
-		<a href="#" class="brand">
-			<img src="../img/CAA_2023-03.png" alt="" id="logo">
-			
-		</a>
-		<span class="text">Workspace</span>
+    <!-- SIDEBAR -->
+    <section id="sidebar">
+        <a href="#" class="brand">
+            <img src="../img/CAA_2023-03.png" alt="" id="logo">
+            
+        </a>
+        <span class="text">Workspace</span>
 
-		<ul class="side-menu top">
-			<li class="">
-				<a href="../index.html">
-					<i class='bx bxs-dashboard' ></i>
-					<span class="text">Dashboard</span>
-				</a>
-			</li>
-			<li class="active">
-				<a href="#">
-					<i class='bx bxs-calendar' ></i>
-					<span class="text">Calendario</span>
-				</a>
-			</li>
-			<li>
-				<a href="../chatbot/chatbot.html">
-					<i class='bx bxs-doughnut-chart' ></i>
-					<span class="text">Chatbot</span>
-				</a>
-			</li>
-			<li>
-				<a href="../notas/notas.html">
-					<i class='bx bxs-message-dots' ></i>
-					<span class="text">Notas</span>
-				</a>
-			</li>
-			
-		</ul>
-		<ul class="side-menu">
-			<li>
-				<a href="../configPerfil/configPerfil.html">
-					<i class='bx bxs-cog' ></i>
-					<span class="text">Configurar perfil</span>
-				</a>
-			</li>
-			<li>
-				<a href="../editarSecciones/editarSecciones.html">
-					<i class='bx bxs-cog' ></i>
-					<span class="text">Editar secciones</span>
-				</a>
-			</li>
-			<li>
-				<a href="../administrarUsuarios/administrarUsuarios.html">
-					<i class='bx bxs-group' ></i>
-					<span class="text">Administrar usuarios</span>
-				</a>
-			</li>
-			<li>
-				<a href="../login/login.html" class="logout">
-					<i class='bx bxs-log-out-circle' ></i>
-					<span class="text">Cerrar sesión</span>
-				</a>
-			</li>
-			
-		</ul>
-	</section>
-	<!-- SIDEBAR -->
+        <ul class="side-menu top">
+            <li class="">
+                <a href="../index.html">
+                    <i class='bx bxs-dashboard' ></i>
+                    <span class="text">Dashboard</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="#">
+                    <i class='bx bxs-calendar' ></i>
+                    <span class="text">Calendario</span>
+                </a>
+            </li>
+            <li>
+                <a href="../chatbot/chatbot.html">
+                    <i class='bx bxs-doughnut-chart' ></i>
+                    <span class="text">Chatbot</span>
+                </a>
+            </li>
+            <li>
+                <a href="../notas/notas.html">
+                    <i class='bx bxs-message-dots' ></i>
+                    <span class="text">Notas</span>
+                </a>
+            </li>
+            
+        </ul>
+        <ul class="side-menu">
+            <li>
+                <a href="../configPerfil/configPerfil.html">
+                    <i class='bx bxs-cog' ></i>
+                    <span class="text">Configurar perfil</span>
+                </a>
+            </li>
+            <li>
+                <a href="../editarSecciones/editarSecciones.html">
+                    <i class='bx bxs-cog' ></i>
+                    <span class="text">Editar secciones</span>
+                </a>
+            </li>
+            <li>
+                <a href="../administrarUsuarios/administrarUsuarios.html">
+                    <i class='bx bxs-group' ></i>
+                    <span class="text">Administrar usuarios</span>
+                </a>
+            </li>
+            <li>
+                <a href="../login/login.html" class="logout">
+                    <i class='bx bxs-log-out-circle' ></i>
+                    <span class="text">Cerrar sesión</span>
+                </a>
+            </li>
+            
+        </ul>
+    </section>
+    <!-- SIDEBAR -->
 
 
 
-	<!-- CONTENT -->
-	<section id="content">
-		<!-- NAVBAR -->
-		<nav>
-			
-			<a href="#" class="nav-link">Categories</a>
-			<form action="#">
-				<div class="form-input">
-					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-				</div>
-			</form>
-			<input type="checkbox" id="switch-mode" hidden>
-			<label for="switch-mode" class="switch-mode"></label>
-			<a href="#" class="notification">
-				<i class='bx bxs-bell' ></i>
-				<span class="num">8</span>
-			</a>
-			<a href="#" class="profile">
-				<img src="img/people.png">
-			</a>
-		</nav>
-		<!-- NAVBAR -->
-		
-		<main>
-			<div class="head-title">
-				<div class="left">
-					<h1>Calendario</h1>
-				</div>
-				<button class="btn-add" onclick="openCreateModal()">
-					<i class='bx bx-plus'></i>
-					<span>Agregar Evento</span>
-				</button>
-			</div>
-		
-			<!-- Calendario aquí -->
-			<div id='calendar'></div>
-		
-			<!-- Modal para crear evento -->
-			<div id="createModal" class="modal">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h2>Crear Nuevo Evento</h2>
-						<span class="close" onclick="closeCreateModal()">&times;</span>
-					</div>
-					<form id="createEventForm">
-						<div class="form-group">
-							<label for="titulo">Título*:</label>
-							<input type="text" id="titulo" name="titulo" required>
-						</div>
-						<div class="form-group">
-							<label for="descripcion">Descripción*:</label>
-							<textarea id="descripcion" name="descripcion" required></textarea>
-						</div>
-						<div class="form-group">
-							<label for="fechaInicio">Fecha de Inicio*:</label>
-							<input type="datetime-local" id="fechaInicio" name="fechaInicio" required>
-						</div>
-						<div class="form-group">
-							<label for="fechaFin">Fecha de Fin*:</label>
-							<input type="datetime-local" id="fechaFin" name="fechaFin" required>
-						</div>
-						<div class="form-group">
+    <!-- CONTENT -->
+    <section id="content">
+        <!-- NAVBAR -->
+        <nav>
+            
+            <a href="#" class="nav-link">Categories</a>
+            <form action="#">
+                <div class="form-input">
+                    <input type="search" placeholder="Search...">
+                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+                </div>
+            </form>
+            <input type="checkbox" id="switch-mode" hidden>
+            <label for="switch-mode" class="switch-mode"></label>
+            <a href="#" class="notification">
+                <i class='bx bxs-bell' ></i>
+                <span class="num">8</span>
+            </a>
+            <a href="#" class="profile">
+                <img src="img/people.png">
+            </a>
+        </nav>
+        <!-- NAVBAR -->
+        
+        <main>
+            <div class="head-title">
+                <div class="left">
+                    <h1>Calendario</h1>
+                </div>
+                <button class="btn-add" onclick="openCreateModal()">
+                    <i class='bx bx-plus'></i>
+                    <span>Agregar Evento</span>
+                </button>
+            </div>
+        
+            <!-- Calendario aquí -->
+            <div id='calendar'></div>
+        
+            <!-- Modal para crear evento -->
+            <div id="createModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Crear Nuevo Evento</h2>
+                        <span class="close" onclick="closeCreateModal()">&times;</span>
+                    </div>
+                    <form id="createEventForm">
+                        <div class="form-group">
+                            <label for="titulo">Título*:</label>
+                            <input type="text" id="titulo" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcion">Descripción*:</label>
+                            <textarea id="descripcion" name="descripcion" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio">Fecha de Inicio*:</label>
+                            <input type="datetime-local" id="fechaInicio" name="fechaInicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha de Fin*:</label>
+                            <input type="datetime-local" id="fechaFin" name="fechaFin" required>
+                        </div>
+                        <div class="form-group">
                             <label>Usuarios*:</label>
                             <div class="checkbox-container">
                                 <div class="select-all-container">
@@ -372,69 +522,112 @@
                                 </div>
                             </div>
                         </div>
-						<div class="modal-footer">
-							<button type="submit" class="btn-save">Guardar</button>
-							<button type="button" class="btn-cancel" onclick="closeCreateModal()">Cancelar</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</main>
-	</section>
-	<!-- CONTENT -->
-	 <!-- Add SweetAlert2 -->
-	 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	 <!-- Custom script -->
-	 <script src="calendario.js"></script>
-	<!-- FullCalendar Script -->
-	<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-	<script src="../script.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			var calendarEl = document.getElementById('calendar');
-			var calendar = new FullCalendar.Calendar(calendarEl, {
-				initialView: 'dayGridMonth',
-				headerToolbar: {
-					left: 'prev,next today',
-					center: 'title',
-					right: 'dayGridMonth,dayGridWeek,dayGridDay'
-				},
-				editable: true,
-				selectable: true,
-				selectMirror: true,
-				dayMaxEvents: true,
-				events: [
-					{
-						title: 'Evento de ejemplo',
-						start: new Date(),
-						allDay: true
-					}
-				],
-				select: function(info) {
-					var title = prompt('Ingrese el título del evento:');
-					if (title) {
-						calendar.addEvent({
-							title: title,
-							start: info.start,
-							end: info.end,
-							allDay: info.allDay
-						});
-					}
-					calendar.unselect();
-				},
-				eventClick: function(info) {
-					if (confirm('¿Desea eliminar este evento?')) {
-						info.event.remove();
-					}
-				},
-				eventDrop: function(info) {
-					if (!confirm('¿Está seguro de mover el evento "' + info.event.title + '" a ' + info.event.start.toLocaleDateString() + '?')) {
-						info.revert();
-					}
-				}
-			});
-			calendar.render();
-		});
-	</script>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn-save">Guardar</button>
+                            <button type="button" class="btn-cancel" onclick="closeCreateModal()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para ver/editar evento -->
+            <div id="viewEventModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Detalles del Evento</h2>
+                        <span class="close" onclick="closeViewModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewEventForm">
+                            <input type="hidden" id="eventId">
+                            <div class="form-group">
+                                <label for="viewTitulo">Título:</label>
+                                <input type="text" id="viewTitulo" name="titulo" disabled required>
+                            </div>
+                            <div class="form-group">
+                                <label for="viewDescripcion">Descripción:</label>
+                                <textarea id="viewDescripcion" name="descripcion" disabled required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="viewFechaInicio">Fecha de inicio:</label>
+                                <input type="datetime-local" id="viewFechaInicio" name="fechaInicio" disabled required>
+                            </div>
+                            <div class="form-group">
+                                <label for="viewFechaFin">Fecha de fin:</label>
+                                <input type="datetime-local" id="viewFechaFin" name="fechaFin" disabled required>
+                            </div>
+                            <div class="form-group">
+                                <label>Usuarios:</label>
+                                <div id="viewUsuariosList" class="usuarios-list"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-delete" onclick="handleDeleteEvent()">Eliminar</button>
+                                <button type="button" class="btn-edit" onclick="enableEventEdit()">Editar</button>
+                                <button type="button" class="btn-save" onclick="handleUpdateEvent()" style="display: none;">Guardar</button>
+                                <button type="button" class="btn-cancel" onclick="closeViewModal()">Cerrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+    <!-- CONTENT -->
+    <!-- Add SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- FullCalendar Script -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    
+    <!-- Custom script -->
+    <script src="calendario.js"></script>
+    <script src="../script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                },
+                editable: true,
+                selectable: true,
+                selectMirror: true,
+                dayMaxEvents: true,
+                events: [
+                    {
+                        title: 'Evento de ejemplo',
+                        start: new Date(),
+                        allDay: true
+                    }
+                ],
+                select: function(info) {
+                    var title = prompt('Ingrese el título del evento:');
+                    if (title) {
+                        calendar.addEvent({
+                            title: title,
+                            start: info.start,
+                            end: info.end,
+                            allDay: info.allDay
+                        });
+                    }
+                    calendar.unselect();
+                },
+                eventClick: function(info) {
+                    if (confirm('¿Desea eliminar este evento?')) {
+                        info.event.remove();
+                    }
+                },
+                eventDrop: function(info) {
+                    if (!confirm('¿Está seguro de mover el evento "' + info.event.title + '" a ' + info.event.start.toLocaleDateString() + '?')) {
+                        info.revert();
+                    }
+                }
+            });
+            calendar.render();
+        });
+    </script>
 </body>
 </html>

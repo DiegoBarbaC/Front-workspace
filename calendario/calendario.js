@@ -7,6 +7,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Inicializar el calendario
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        locale: 'es',
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        },
+        editable: true,
+        selectable: true,
+        events: loadEvents,
+        eventClick: function(info) {
+            showEventDetails(info.event);
+        }
+    });
+    
+    calendar.render();
+
     // Cargar la lista de usuarios para el select
     loadUsers();
 
@@ -223,7 +249,7 @@ async function handleCreateEvent(event) {
             closeCreateModal();
             document.getElementById('createEventForm').reset();
             document.getElementById('selectAll').checked = false;
-            // Aquí puedes agregar código para actualizar el calendario
+            window.location.reload();
         });
     } catch (error) {
         console.error('Error:', error);
@@ -245,4 +271,216 @@ function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
     document.getElementById('createEventForm').reset();
     document.body.classList.remove('modal-open');
+}
+
+// Función para mostrar detalles del evento
+function showEventDetails(event) {
+    // Llenar el modal con los datos del evento
+    document.getElementById('eventId').value = event.id;
+    document.getElementById('viewTitulo').value = event.title;
+    document.getElementById('viewDescripcion').value = event.extendedProps.descripcion || '';
+    
+    // Formatear las fechas para el input datetime-local
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end || event.start);
+    
+    document.getElementById('viewFechaInicio').value = startDate.toISOString().slice(0, 16);
+    document.getElementById('viewFechaFin').value = endDate.toISOString().slice(0, 16);
+    
+    // Mostrar los usuarios asignados
+    const usuariosList = document.getElementById('viewUsuariosList');
+    usuariosList.innerHTML = '';
+    
+    // Mostrar los botones de editar y eliminar
+    document.querySelector('.btn-delete').style.display = 'block';
+    document.querySelector('.btn-edit').style.display = 'block';
+    document.querySelector('.btn-save').style.display = 'none';
+    
+    // Mostrar el modal
+    const modal = document.getElementById('viewEventModal');
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+}
+
+// Función para habilitar la edición del evento
+function enableEventEdit() {
+    // Habilitar los campos
+    document.getElementById('viewTitulo').disabled = false;
+    document.getElementById('viewDescripcion').disabled = false;
+    document.getElementById('viewFechaInicio').disabled = false;
+    document.getElementById('viewFechaFin').disabled = false;
+    
+    // Mostrar el botón de guardar y ocultar el de editar
+    document.querySelector('.btn-edit').style.display = 'none';
+    document.querySelector('.btn-save').style.display = 'block';
+}
+
+// Función para manejar la actualización del evento
+async function handleUpdateEvent() {
+    const eventId = document.getElementById('eventId').value;
+    const token = localStorage.getItem('token');
+    
+    const eventData = {
+        titulo: document.getElementById('viewTitulo').value,
+        descripcion: document.getElementById('viewDescripcion').value,
+        fecha_inicio: document.getElementById('viewFechaInicio').value,
+        fecha_fin: document.getElementById('viewFechaFin').value
+    };
+    
+    try {
+        const response = await fetch(`http://localhost:5000/updateEvent/${eventId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(eventData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al actualizar el evento');
+        }
+        
+        // Actualizar el calendario
+        await loadEvents();
+        
+        // Cerrar el modal
+        closeViewModal();
+        
+        // Mostrar mensaje de éxito
+        Swal.fire({
+            icon: 'success',
+            title: 'Evento actualizado',
+            showConfirmButton: false,
+            timer: 1500
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo actualizar el evento'
+        });
+    }
+}
+
+// Función para manejar la eliminación del evento
+async function handleDeleteEvent() {
+    const eventId = document.getElementById('eventId').value;
+    const token = localStorage.getItem('token');
+    authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    // Confirmar eliminación
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esta acción",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`http://localhost:5000/deleteEvent/${eventId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': authToken
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al eliminar el evento');
+            }
+            
+            // Actualizar el calendario
+            await loadEvents();
+            
+            // Cerrar el modal
+            closeViewModal();
+            
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                icon: 'success',
+                title: 'Evento eliminado',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo eliminar el evento'
+            });
+        }
+    }
+}
+
+// Función para cerrar el modal de vista/edición
+function closeViewModal() {
+    document.getElementById('viewEventModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+    // Resetear el formulario y deshabilitar campos
+    document.getElementById('viewEventForm').reset();
+    document.getElementById('viewTitulo').disabled = true;
+    document.getElementById('viewDescripcion').disabled = true;
+    document.getElementById('viewFechaInicio').disabled = true;
+    document.getElementById('viewFechaFin').disabled = true;
+    // Restaurar botones
+    document.querySelector('.btn-edit').style.display = 'inline-block';
+    document.querySelector('.btn-save').style.display = 'none';
+}
+
+// Función para cargar eventos
+async function loadEvents(info, successCallback, failureCallback) {
+    try {
+        const token = localStorage.getItem('token');
+        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        if (!token) return;
+
+        const response = await fetch('http://localhost:5000/getEvents', {
+            method: 'GET',
+            headers: {
+                'Authorization': authToken
+            }
+        });
+
+        if (!response.ok) throw new Error('Error al cargar eventos');
+
+        const data = await response.json();
+        console.log('Eventos recibidos:', data.eventos);
+
+        const events = data.eventos.map(evento => {
+            return {
+                id: evento.id,
+                title: evento.title,
+                start: new Date(evento.start),
+                end: new Date(evento.end),
+                extendedProps: {
+                    descripcion: evento.description,
+                    usuarios: evento.usuarios || [],
+                    creador_id: evento.creador_id
+                }
+            };
+        });
+
+        console.log('Eventos formateados:', events);
+
+        if (successCallback) {
+            successCallback(events);
+        }
+    } catch (error) {
+        console.error('Error al cargar eventos:', error);
+        if (failureCallback) {
+            failureCallback(error);
+        }
+        // Mostrar mensaje de error al usuario
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los eventos'
+        });
+    }
 }
