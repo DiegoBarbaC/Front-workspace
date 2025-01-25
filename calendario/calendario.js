@@ -291,7 +291,13 @@ function showEventDetails(event) {
     const usuariosList = document.getElementById('viewUsuariosList');
     usuariosList.innerHTML = '';
     
-    // Mostrar los botones de editar y eliminar
+    // Habilitar los campos para edición directa
+    document.getElementById('viewTitulo').disabled = false;
+    document.getElementById('viewDescripcion').disabled = false;
+    document.getElementById('viewFechaInicio').disabled = false;
+    document.getElementById('viewFechaFin').disabled = false;
+    
+    // Mostrar los botones
     document.querySelector('.btn-delete').style.display = 'block';
     document.querySelector('.btn-edit').style.display = 'block';
     document.querySelector('.btn-save').style.display = 'none';
@@ -302,39 +308,27 @@ function showEventDetails(event) {
     document.body.classList.add('modal-open');
 }
 
-// Función para habilitar la edición del evento
-function enableEventEdit() {
-    // Habilitar los campos
-    document.getElementById('viewTitulo').disabled = false;
-    document.getElementById('viewDescripcion').disabled = false;
-    document.getElementById('viewFechaInicio').disabled = false;
-    document.getElementById('viewFechaFin').disabled = false;
-    
-    // Mostrar el botón de guardar y ocultar el de editar
-    document.querySelector('.btn-edit').style.display = 'none';
-    document.querySelector('.btn-save').style.display = 'block';
-}
-
-// Función para manejar la actualización del evento
-async function handleUpdateEvent() {
-    const eventId = document.getElementById('eventId').value;
+// Función para manejar el clic en el botón editar
+async function handleEditEvent() {
+    const eventId = String(document.getElementById('eventId').value);
     const token = localStorage.getItem('token');
+    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     
-    const eventData = {
-        titulo: document.getElementById('viewTitulo').value,
-        descripcion: document.getElementById('viewDescripcion').value,
-        fecha_inicio: document.getElementById('viewFechaInicio').value,
-        fecha_fin: document.getElementById('viewFechaFin').value
-    };
+
+    // Crear FormData con los datos del evento
+    const formData = new FormData();
+    formData.append('titulo', document.getElementById('viewTitulo').value);
+    formData.append('descripcion', document.getElementById('viewDescripcion').value);
+    formData.append('fechaInicio', document.getElementById('viewFechaInicio').value);
+    formData.append('fechaFin', document.getElementById('viewFechaFin').value);
     
     try {
         const response = await fetch(`http://localhost:5000/updateEvent/${eventId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': authToken
             },
-            body: JSON.stringify(eventData)
+            body: formData
         });
         
         if (!response.ok) {
@@ -362,6 +356,21 @@ async function handleUpdateEvent() {
             text: 'No se pudo actualizar el evento'
         });
     }
+}
+
+// Función para cerrar el modal de vista/edición
+function closeViewModal() {
+    document.getElementById('viewEventModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+    // Resetear el formulario y deshabilitar campos
+    document.getElementById('viewEventForm').reset();
+    document.getElementById('viewTitulo').disabled = true;
+    document.getElementById('viewDescripcion').disabled = true;
+    document.getElementById('viewFechaInicio').disabled = true;
+    document.getElementById('viewFechaFin').disabled = true;
+    // Restaurar botones
+    document.querySelector('.btn-edit').style.display = 'inline-block';
+    document.querySelector('.btn-save').style.display = 'none';
 }
 
 // Función para manejar la eliminación del evento
@@ -416,21 +425,6 @@ async function handleDeleteEvent() {
             });
         }
     }
-}
-
-// Función para cerrar el modal de vista/edición
-function closeViewModal() {
-    document.getElementById('viewEventModal').style.display = 'none';
-    document.body.classList.remove('modal-open');
-    // Resetear el formulario y deshabilitar campos
-    document.getElementById('viewEventForm').reset();
-    document.getElementById('viewTitulo').disabled = true;
-    document.getElementById('viewDescripcion').disabled = true;
-    document.getElementById('viewFechaInicio').disabled = true;
-    document.getElementById('viewFechaFin').disabled = true;
-    // Restaurar botones
-    document.querySelector('.btn-edit').style.display = 'inline-block';
-    document.querySelector('.btn-save').style.display = 'none';
 }
 
 // Función para cargar eventos

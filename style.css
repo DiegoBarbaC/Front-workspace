@@ -34,6 +34,23 @@ li {
 html {
 	overflow-x: hidden;
 }
+nav {
+	height: 56px;
+	background: var(--light);
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	position: sticky;
+	top: 0;
+	left: 0;
+	z-index: 1000;
+}
+.nav-right {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
 
 body.dark {
 	--light: #0C0C1E;

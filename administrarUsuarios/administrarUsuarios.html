@@ -11,7 +11,7 @@
 
     <title>Workspace CAA</title>
 
-    /* Estilos para la tabla */
+    
     <style>
 table {
     width: 100%; /* Ancho completo */
@@ -138,7 +138,7 @@ input[type="file"] {
 }
 
 button {
-    background-color: #4CAF50; /* Color de fondo del botón */
+    background-color: var(--blue); /* Color de fondo del botón */
     color: white; /* Color del texto */
     padding: 10px 15px; /* Espaciado interno */
     border: none; /* Sin borde */
@@ -147,19 +147,16 @@ button {
     margin-top: 10px; /* Espacio superior */
 }
 
-button:hover {
-    background-color: #45a049; /* Color al pasar el mouse */
-}
-.delete-button:hover {
-    background-color: #c9302c; /* Color al pasar el mouse */
-}
+
 .delete-button {
     margin-left: 10px; /* Ajusta el valor según sea necesario */
-    background-color: red;
+    background-color: #fff;
+    color: var(--blue);
+    border: 1px solid var(--blue);
 }
 
 .btn-add {
-    background-color: #4CAF50;
+    background-color: var(--blue);
     color: white;
     padding: 10px 20px;
     border: none;
@@ -174,9 +171,7 @@ button:hover {
     font-size: 20px;
 }
 
-.btn-add:hover {
-    background-color: #45a049;
-}
+
 
 .head-title {
     display: flex;
@@ -276,14 +271,8 @@ button:hover {
         <!-- NAVBAR -->
         <nav>
             
-            <a href="#" class="nav-link">Categories</a>
-            <form action="#">
-                <div class="form-input">
-                    <input type="search" placeholder="Search...">
-                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-                </div>
-            </form>
-            <input type="checkbox" id="switch-mode" hidden>
+            <div class="nav-right">
+                <input type="checkbox" id="switch-mode" hidden>
             <label for="switch-mode" class="switch-mode"></label>
             <a href="#" class="notification">
                 <i class='bx bxs-bell' ></i>
@@ -292,6 +281,9 @@ button:hover {
             <a href="#" class="profile">
                 <img src="img/people.png">
             </a>
+
+            </div>
+            
         </nav>
         <!-- NAVBAR -->
         
@@ -379,7 +371,7 @@ button:hover {
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeCreateModal()">Cancelar</button>
-                    <button type="button" onclick="createUser()">Crear Usuario</button>
+                    <button type="button" id="createUser" onclick="createUser()">Crear Usuario</button>
                 </div>
             </form>
         </div>

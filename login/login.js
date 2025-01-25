@@ -46,8 +46,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Guardar el token exactamente como lo espera el backend
                 const tokenToStore = `Bearer ${data.access_token}`;
-                console.log('Token a guardar:', tokenToStore);
                 localStorage.setItem('token', tokenToStore);
+                //const tokenParts = tokenToStore.split('.');
+                //const payload = JSON.parse(atob(tokenParts[1]));
+                
+                //const isAdmin = payload.admin;
+                //const canEdit = payload.editar;
+                //const userPhoto = payload.foto;
+
+                //localStorage.setItem('admin', isAdmin);
+                //localStorage.setItem('editar', canEdit);
+                //localStorage.setItem('foto', userPhoto);
+
+                //console.log('admin:', isAdmin);
+                //console.log('editar:', canEdit);
+                //console.log('foto:', userPhoto);
 
                 window.location.replace('../index.html');
             } else {

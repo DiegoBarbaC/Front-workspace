@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
 
@@ -365,8 +365,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.isConfirmed) {
                 // Limpiar el token del localStorage
                 localStorage.removeItem('token');
+                
                 // Redirigir al login
-                window.location.href = '../Front-workspace/login/login.html';
+                //ruta absoluta
+                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
             }
         });
     }

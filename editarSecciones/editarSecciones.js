@@ -1,3 +1,4 @@
+let isProcessing = false;
 async function loadCardsFromAPI() {
     try {
         const token = localStorage.getItem('token');
@@ -209,18 +210,26 @@ function closeCreateModal() {
     document.body.classList.remove('modal-open');
 }
 
-function createSection() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+async function createSection() {
+    if (isProcessing) {
         return;
     }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-
-    // Validar que todos los campos estén llenos
-    const titulo = document.getElementById('createTitle').value;
-    const descripcion = document.getElementById('createDescription').value;
+    
+    const createButton = document.getElementById('createSection');
+    createButton.disabled = true;
+    createButton.innerHTML = 'Creando...';
+    isProcessing = true;
+    try{
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found');
+            window.location.replace('../Front-workspace/login/login.html');
+            return;
+        }
+        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        // Validar que todos los campos estén llenos
+        const titulo = document.getElementById('createTitle').value;
+        const descripcion = document.getElementById('createDescription').value;
     const link = document.getElementById('createLink').value;
     const imagen = document.getElementById('createImage').files[0];
 
@@ -232,46 +241,47 @@ function createSection() {
         });
         return;
     }
-
     const formData = new FormData();
     formData.append('titulo', titulo);
     formData.append('descripcion', descripcion);
     formData.append('link', link);
     formData.append('imagen', imagen);
 
-    fetch('http://localhost:5000/createGlobalSection', {
+    const response = await fetch('http://localhost:5000/createGlobalSection', {
         method: 'POST',
         headers: {
             'Authorization': authToken
         },
         body: formData
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al crear la sección');
-        }
-        return response.json();
-    })
-    .then(data => {
-        Swal.fire({
-            icon: 'success',
-            title: '¡Éxito!',
-            text: 'Sección creada correctamente',
-        }).then(() => {
-            closeCreateModal();
-            window.location.reload();
+    if (!response.ok) {
+        return response.json().then(data => {
+            throw new Error(data.message || 'Error al crear la seccón');
         });
-    })
-    .catch(error => {
+    }
+    closeCreateModal();
+    await Swal.fire({
+        icon: 'success',
+        title: '¡Sección creada!',
+        text: 'La sección ha sido creada exitosamente',
+    });
+    window.location.reload();
+
+    }catch(error){
         console.error('Error:', error);
-        Swal.fire({
+        await Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'No se pudo crear la sección',
+            text: error.message || 'No se pudo crear la sección',
         });
-    });
-}
 
+    }finally{
+        createButton.disabled = false;
+        createButton.innerHTML = 'Crear sección';
+        isProcessing = false;
+    }
+}
+    
 document.addEventListener('DOMContentLoaded', function() {
     loadCardsFromAPI();
 

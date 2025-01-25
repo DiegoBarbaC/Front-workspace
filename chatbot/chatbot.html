@@ -23,7 +23,7 @@
 		<span class="text">Workspace</span>
 
 		<ul class="side-menu top">
-			<li >
+			<li>
 				<a href="../index.html">
 					<i class='bx bxs-dashboard' ></i>
 					<span class="text">Dashboard</span>
@@ -36,7 +36,7 @@
 				</a>
 			</li>
 			<li class="active">
-				<a href="#">
+				<a href="../chatbot/chatbot.html">
 					<i class='bx bxs-doughnut-chart' ></i>
 					<span class="text">Chatbot</span>
 				</a>
@@ -69,7 +69,7 @@
 				</a>
 			</li>
 			<li>
-				<a href="../login/login.html" class="logout">
+				<a href="#" class="logout">
 					<i class='bx bxs-log-out-circle' ></i>
 					<span class="text">Cerrar sesión</span>
 				</a>
@@ -85,22 +85,19 @@
 		<!-- NAVBAR -->
 		<nav>
 			
-			<a href="#" class="nav-link">Categories</a>
-			<form action="#">
-				<div class="form-input">
-					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-				</div>
-			</form>
-			<input type="checkbox" id="switch-mode" hidden>
-			<label for="switch-mode" class="switch-mode"></label>
-			<a href="#" class="notification">
-				<i class='bx bxs-bell' ></i>
-				<span class="num">8</span>
-			</a>
-			<a href="#" class="profile">
-				<img src="img/people.png">
-			</a>
+			<div class="nav-right">
+				<input type="checkbox" id="switch-mode" hidden>
+				<label for="switch-mode" class="switch-mode"></label>
+				<a href="#" class="notification">
+					<i class='bx bxs-bell' ></i>
+					<span class="num">8</span>
+				</a>
+				<a href="#" class="profile">
+					<img src="img/people.png">
+				</a>
+
+			</div>
+			
 		</nav>
 		<!-- NAVBAR -->
 		
@@ -126,7 +123,11 @@
 				
 				
 			</div>
-			
+			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+			<!-- Add Sortable.js library -->
+			<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
 		</main>
 		<!-- MAIN -->
 	</section>

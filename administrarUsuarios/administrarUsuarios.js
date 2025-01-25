@@ -1,5 +1,7 @@
 // Variable para almacenar el ID del usuario actual
 let currentUserId;
+//Variable para controlar si hay una peticion en proceso
+let isRequestInProgress = false;
 
 // Función para cargar los usuarios desde la API
 async function loadUsersFromAPI() {
@@ -235,8 +237,19 @@ function closeCreateModal() {
     document.body.classList.remove('modal-open');
 }
 
+let isCreatingUser = false;
 // Función para crear usuario
-function createUser() {
+async function createUser() {
+    if (isCreatingUser) {
+        return;
+    }
+    
+    const createButton = document.getElementById('createUser');
+    createButton.disabled = true;
+    createButton.innerHTML = 'Creando...';
+    isCreatingUser = true;
+
+    try{
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
@@ -255,41 +268,43 @@ function createUser() {
         editar: editar
     };
 
-    fetch('http://localhost:5000/register', {
+    const response = await fetch('http://localhost:5000/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': authToken
         },
         body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.message || 'Error al crear el usuario');
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        closeCreateModal();
-        Swal.fire({
-            icon: 'success',
-            title: '¡Usuario creado!',
-            html: `La coontraseña se ha enviado al correo ${email}.<br>Por favor, indicar que la cambie al iniciar sesión.`,
-        }).then(() => {
-            window.location.reload();
+    });
+    if (!response.ok) {
+        return response.json().then(data => {
+            throw new Error(data.message || 'Error al crear el usuario');
         });
-    })
-    .catch(error => {
+    }
+
+    const responseData = await response.json();
+    closeCreateModal();
+    await Swal.fire({
+        icon: 'success',
+        title: '¡Usuario creado!',
+        html: `La contraseña se ha enviado al correo ${email}.<br>Por favor, indicar que la cambie al iniciar sesión.`,
+    });
+    window.location.reload();
+    }catch(error){
         console.error('Error:', error);
-        Swal.fire({
+        await Swal.fire({
             icon: 'error',
             title: 'Error',
             text: error.message || 'No se pudo crear el usuario',
         });
-    });
-}
+}finally{
+    isCreatingUser = false;
+        createButton.disabled = false;
+        createButton.innerHTML = 'Crear Usuario';
+}}
+
+
+
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {

@@ -254,7 +254,7 @@
         }
 
         .btn-save {
-            background-color: #28a745;
+            background-color: var(--blue);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -272,10 +272,7 @@
         }
 
         /* Hover effects */
-        .btn-delete:hover { background-color: #c82333; }
-        .btn-edit:hover { background-color: #e0a800; }
-        .btn-save:hover { background-color: #218838; }
-        .btn-cancel:hover { background-color: #5a6268; }
+        
 
         /* Dark mode */
         body.dark .btn-edit {
@@ -453,14 +450,8 @@
         <!-- NAVBAR -->
         <nav>
             
-            <a href="#" class="nav-link">Categories</a>
-            <form action="#">
-                <div class="form-input">
-                    <input type="search" placeholder="Search...">
-                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-                </div>
-            </form>
-            <input type="checkbox" id="switch-mode" hidden>
+            <div class="nav-right">
+				<input type="checkbox" id="switch-mode" hidden>
             <label for="switch-mode" class="switch-mode"></label>
             <a href="#" class="notification">
                 <i class='bx bxs-bell' ></i>
@@ -470,6 +461,9 @@
                 <img src="img/people.png">
             </a>
         </nav>
+
+			</div>
+            
         <!-- NAVBAR -->
         
         <main>
@@ -561,9 +555,8 @@
                                 <div id="viewUsuariosList" class="usuarios-list"></div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn-delete" onclick="handleDeleteEvent()">Eliminar</button>
-                                <button type="button" class="btn-edit" onclick="enableEventEdit()">Editar</button>
-                                <button type="button" class="btn-save" onclick="handleUpdateEvent()" style="display: none;">Guardar</button>
+                                <button type="button" class="btn btn-primary btn-edit" onclick="handleEditEvent()">Guardar</button>
+                                <button type="button" class="btn btn-danger btn-delete" onclick="handleDeleteEvent()">Eliminar</button>
                                 <button type="button" class="btn-cancel" onclick="closeViewModal()">Cerrar</button>
                             </div>
                         </form>
@@ -626,7 +619,7 @@
                     }
                 }
             });
-            calendar.render();
+            //calendar.render();
         });
     </script>
 </body>
