@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config.js"
 // Variable para almacenar el ID del usuario actual
 let currentUserId;
 //Variable para controlar si hay una peticion en proceso
@@ -9,12 +10,12 @@ async function loadUsersFromAPI() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('../Front-workspace/login/login.html');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-        const response = await fetch('http://localhost:5000/getAllUsers', {
+        const response = await fetch(`${API_BASE_URL}/getAllUsers`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken
@@ -69,14 +70,14 @@ function editUser(userId) {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
     console.log("Enviando petición para ID:", userId);
 
-    fetch(`http://127.0.0.1:5000/getUser/${userId}`, {
+    fetch(`${API_BASE_URL}/getUser/${userId}`, {
         method: 'GET',
         headers: {
             'Authorization': authToken,
@@ -87,7 +88,7 @@ function editUser(userId) {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                window.location.replace('../Front-workspace/login/login.html');
+                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
                 return;
             }
             throw new Error('Error al obtener el usuario');
@@ -117,7 +118,7 @@ function saveChanges() {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -131,7 +132,7 @@ function saveChanges() {
     formData.append('admin', admin);
     formData.append('editar', editar);
 
-    fetch('http://127.0.0.1:5000/updateUser', {
+    fetch(`${API_BASE_URL}/updateUser`, {
         method: 'PUT',
         headers: {
             'Authorization': authToken
@@ -179,12 +180,12 @@ function deleteUser(email) {
         if (result.isConfirmed) {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.replace('../Front-workspace/login/login.html');
+                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
                 return;
             }
             const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-            fetch('http://localhost:5000/deleteUser', {
+            fetch(`${API_BASE_URL}/deleteUser`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -253,7 +254,7 @@ async function createUser() {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -268,7 +269,7 @@ async function createUser() {
         editar: editar
     };
 
-    const response = await fetch('http://localhost:5000/register', {
+    const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

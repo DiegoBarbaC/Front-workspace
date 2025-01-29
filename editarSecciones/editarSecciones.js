@@ -1,10 +1,11 @@
 let isProcessing = false;
+import API_BASE_URL from "../config.js";
 async function loadCardsFromAPI() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('../Front-workspace/login/login.html');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
 
@@ -12,7 +13,7 @@ async function loadCardsFromAPI() {
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         console.log('Token de autorización:', authToken); // Debug
 
-        const response = await fetch('http://localhost:5000/user/sections', {
+        const response = await fetch(`${API_BASE_URL}/user/sections`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken,
@@ -27,7 +28,7 @@ async function loadCardsFromAPI() {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                window.location.replace('../Front-workspace/login/login.html');
+                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(responseData)}`);
@@ -83,12 +84,12 @@ function editSection(sectionId) {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-    fetch(`http://localhost:5000/user/sections/${sectionId}`, {
+    fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
         method: 'GET',
         headers: {
             'Authorization': authToken
@@ -131,7 +132,7 @@ function saveChanges() {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('No token found');
-        window.location.replace('../Front-workspace/login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -146,7 +147,7 @@ function saveChanges() {
         formData.append('imagen', imageFile);
     }
 
-    fetch(`http://localhost:5000/editSection/${currentSectionId}`, {
+    fetch(`${API_BASE_URL}/editSection/${currentSectionId}`, {
         method: 'PUT',
         headers: {
             'Authorization': authToken
@@ -173,12 +174,12 @@ function deleteSection(sectionId) {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('../Front-workspace/login/login.html');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-        fetch(`http://localhost:5000/user/sections/${sectionId}`, {
+        fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': authToken
@@ -223,7 +224,7 @@ async function createSection() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('../Front-workspace/login/login.html');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -247,7 +248,7 @@ async function createSection() {
     formData.append('link', link);
     formData.append('imagen', imagen);
 
-    const response = await fetch('http://localhost:5000/createGlobalSection', {
+    const response = await fetch(`${API_BASE_URL}/createGlobalSection`, {
         method: 'POST',
         headers: {
             'Authorization': authToken

@@ -1,5 +1,5 @@
 const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
-
+import API_BASE_URL from "./config.js";
 allSideMenu.forEach(item=> {
 	const li = item.parentElement;
 
@@ -66,7 +66,7 @@ async function loadCardsFromAPI() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('../Front-workspace/login/login.html');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
 
@@ -74,7 +74,7 @@ async function loadCardsFromAPI() {
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         console.log('Token de autorización:', authToken); // Debug
 
-        const response = await fetch('http://localhost:5000/user/sections', {
+        const response = await fetch(`${API_BASE_URL}/user/sections`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken,
@@ -89,7 +89,7 @@ async function loadCardsFromAPI() {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                window.location.replace('../Front-workspace/login/login.html');
+                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(responseData)}`);
@@ -161,11 +161,11 @@ async function saveCardOrder() {
         if (result.isConfirmed) {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '../Front-workspace/login/login.html';
+                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
                 return;
             }
 
-            fetch('http://localhost:5000/user/sections/order', {
+            fetch(`${API_BASE_URL}/user/sections/order`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -264,7 +264,7 @@ async function removeSection(sectionId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:5000/user/sections/${sectionId}`, {
+        const response = await fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

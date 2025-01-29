@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config.js";
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar si ya hay un token válido
     const token = localStorage.getItem('token');
@@ -16,10 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = document.getElementById('password').value.toString();
 
         try {
-            console.log('Intentando conectar a:', 'http://localhost:5000/login');
+            console.log('Intentando conectar a:', API_BASE_URL + '/login');
             console.log('Datos de login:', { email: username, password: password.length + ' caracteres' });
 
-            const response = await fetch('http://localhost:5000/login', {
+            const response = await fetch(API_BASE_URL + '/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -75,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                errorMessage.textContent = 'No se puede conectar al servidor. Asegúrate de que el servidor esté corriendo en http://localhost:5000';
+                errorMessage.textContent = 'No se puede conectar al servidor. Asegúrate de que el servidor esté corriendo en ' + API_BASE_URL;
             } else {
                 errorMessage.textContent = 'Error de conexión: ' + error.message;
             }

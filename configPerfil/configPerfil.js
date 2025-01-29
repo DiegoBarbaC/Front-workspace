@@ -1,3 +1,4 @@
+import  API_BASE_URL  from '../config.js';
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos del usuario
     loadUserData();
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadUserData() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('../login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -36,7 +37,7 @@ function loadUserData() {
     const payload = JSON.parse(atob(tokenParts[1]));
     var userId = String(payload.sub); // El ID del usuario está en el campo 'sub' del tokenpayload.sub; // El ID del usuario está en el campo 'sub' del token
     console.log(userId);
-    fetch(`http://127.0.0.1:5000/getUser/${userId}`, {
+    fetch(`${API_BASE_URL}/getUser/${userId}`, {
         headers: {
             'Authorization': authToken
         }
@@ -91,7 +92,7 @@ function handleFormSubmit(event) {
 
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('../login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -137,7 +138,7 @@ function handleFormSubmit(event) {
         formData.append('foto', imageFile);
     }
 
-    fetch('http://127.0.0.1:5000/updateUser', {
+    fetch(`${API_BASE_URL}/updateUser`, {
         method: 'PUT',
         headers: {
             'Authorization': authToken

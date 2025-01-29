@@ -1,9 +1,10 @@
+import  API_BASE_URL  from '../config.js';
 // Verificar autenticación al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('../login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
 
@@ -53,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.removeItem('token');
-                window.location.href = '../login/login.html';
+                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
             }
         });
     }
@@ -99,7 +100,7 @@ async function loadUsers() {
         
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         
-        const response = await fetch('http://localhost:5000/getAllUsers', {
+        const response = await fetch(`${API_BASE_URL}/getAllUsers`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken
@@ -183,7 +184,7 @@ async function handleCreateEvent(event) {
     
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('../login/login.html');
+        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -229,7 +230,7 @@ async function handleCreateEvent(event) {
     });
 
     try {
-        const response = await fetch('http://localhost:5000/addEvent', {
+        const response = await fetch(`${API_BASE_URL}/addEvent`, {
             method: 'POST',
             headers: {
                 'Authorization': authToken
@@ -323,7 +324,7 @@ async function handleEditEvent() {
     formData.append('fechaFin', document.getElementById('viewFechaFin').value);
     
     try {
-        const response = await fetch(`http://localhost:5000/updateEvent/${eventId}`, {
+        const response = await fetch(`${API_BASE_URL}/updateEvent/${eventId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': authToken
@@ -392,7 +393,7 @@ async function handleDeleteEvent() {
     
     if (result.isConfirmed) {
         try {
-            const response = await fetch(`http://localhost:5000/deleteEvent/${eventId}`, {
+            const response = await fetch(`${API_BASE_URL}/deleteEvent/${eventId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': authToken
@@ -425,6 +426,7 @@ async function handleDeleteEvent() {
             });
         }
     }
+    window.location.reload();
 }
 
 // Función para cargar eventos
@@ -434,7 +436,7 @@ async function loadEvents(info, successCallback, failureCallback) {
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         if (!token) return;
 
-        const response = await fetch('http://localhost:5000/getEvents', {
+        const response = await fetch(`${API_BASE_URL}/getEvents`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken
