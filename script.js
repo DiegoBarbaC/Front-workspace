@@ -1,5 +1,7 @@
 const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
 import API_BASE_URL from "./config.js";
+import NotificationManager from './notifications.js';
+
 allSideMenu.forEach(item=> {
 	const li = item.parentElement;
 

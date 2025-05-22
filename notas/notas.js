@@ -6,26 +6,186 @@ const token = localStorage.getItem('token');
 if (!token) {
     console.error('No token found');
     window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-    
 }
 const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-// Initialize Socket.IO
-console.log('Inicializando Socket.IO');
-const socket = io(API_BASE_URL, {
-    auth: {
-        token: authToken
-    }
-});
-
+// Variables globales
 let quill;
 let currentNoteId = null;
-let isTyping = false;
-let typingTimeout = null;
+let saveTimeout = null;
+let lastSavedContent = '';
+let isSaving = false;
 
-// Initialize Quill editor
+// Función para cargar una nota específica
+async function loadNote(noteId) {
+    try {
+        console.log('Cargando nota:', noteId);
+        
+        // Asegurarnos de que el ID sea un string válido
+        const id = typeof noteId === 'string' ? noteId : 
+                  noteId.$oid ? noteId.$oid : 
+                  noteId.toString();
+        
+        currentNoteId = id;
+        
+        const url = `${API_BASE_URL}/getNote/${id}`;
+        console.log('URL de la petición:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': authToken,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Error del servidor:', errorData);
+            throw new Error(`Error del servidor: ${response.status} - ${errorData}`);
+        }
+
+        const note = await response.json();
+        console.log('Nota cargada:', note);
+        
+        // Actualizar el título de la nota en la página
+        const titleElement = document.getElementById('note-title');
+        if (titleElement) {
+            titleElement.textContent = note.titulo || 'Nota sin título';
+        }
+        
+        // Establecer el contenido en el editor
+        if (quill) {
+            console.log('Estableciendo contenido en el editor');
+            // Manejar el caso donde contenido es null, undefined o vacío
+            if (note.contenido && note.contenido.trim() !== '') {
+                quill.root.innerHTML = note.contenido;
+            } else {
+                quill.root.innerHTML = ''; // Inicializar con contenido vacío
+            }
+            
+            lastSavedContent = quill.root.innerHTML;
+            return true;
+        } else {
+            console.warn('No se pudo establecer el contenido: Quill no está inicializado');
+            return false;
+        }
+
+    } catch (error) {
+        console.error('Error detallado:', {
+            message: error.message,
+            stack: error.stack,
+            noteId: noteId
+        });
+        throw error;
+    }
+}
+
+// Función para guardar el contenido de la nota
+async function saveNoteContent() {
+    if (!currentNoteId || !quill || isSaving) return;
+    
+    const currentContent = quill.root.innerHTML;
+    
+    // Si el contenido no ha cambiado, no hacer nada
+    if (currentContent === lastSavedContent) {
+        console.log('El contenido no ha cambiado, no se guarda');
+        return;
+    }
+    
+    isSaving = true;
+    
+    try {
+        console.log('Guardando nota:', currentNoteId);
+        
+        const response = await fetch(`${API_BASE_URL}/updateNote/${currentNoteId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': authToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contenido: currentContent
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Error al guardar nota:', errorData);
+            throw new Error(`Error al guardar: ${response.status} - ${errorData}`);
+        }
+        
+        console.log('Nota guardada correctamente');
+        lastSavedContent = currentContent;
+        
+        // Mostrar indicador de guardado (opcional)
+        const saveIndicator = document.getElementById('save-indicator');
+        if (saveIndicator) {
+            saveIndicator.textContent = 'Guardado';
+            saveIndicator.classList.add('saved');
+            
+            setTimeout(() => {
+                saveIndicator.classList.remove('saved');
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('Error al guardar nota:', error);
+        
+        // Mostrar mensaje de error
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al guardar',
+            text: error.message || 'No se pudo guardar la nota'
+        });
+    } finally {
+        isSaving = false;
+    }
+}
+
+// Inicializar el editor Quill y cargar la nota
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM Cargado, inicializando Quill');
+    
+    // Crear indicador de guardado si no existe
+    if (!document.getElementById('save-indicator')) {
+        const saveIndicator = document.createElement('div');
+        saveIndicator.id = 'save-indicator';
+        saveIndicator.className = 'save-indicator';
+        saveIndicator.textContent = 'Guardado automático activado';
+        document.body.appendChild(saveIndicator);
+        
+        // Estilos para el indicador de guardado
+        const style = document.createElement('style');
+        style.textContent = `
+            .save-indicator {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                z-index: 1000;
+            }
+            .save-indicator.saved {
+                opacity: 1;
+                background-color: rgba(40, 167, 69, 0.9);
+            }
+            .save-indicator.saving {
+                opacity: 1;
+                background-color: rgba(0, 123, 255, 0.9);
+            }
+            .save-indicator.error {
+                opacity: 1;
+                background-color: rgba(220, 53, 69, 0.9);
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     const editorElement = document.querySelector('#editor');
     if (!editorElement) {
@@ -52,187 +212,113 @@ document.addEventListener('DOMContentLoaded', async function() {
             placeholder: 'Comienza a escribir tu nota aquí...'
         });
         console.log('Quill creado exitosamente:', quill);
-    } catch (error) {
-        console.error('Error al crear Quill:', error);
-    }
-
-    // Obtener el ID de la nota de la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const noteId = urlParams.get('id');
-    console.log('ID de nota obtenido de URL:', noteId);
-
-    if (noteId) {
-        try {
-            console.log('Intentando cargar nota con ID:', noteId);
-            await loadNote(noteId);
-            joinNoteRoom(noteId);
-        } catch (error) {
-            console.error('Error al cargar la nota:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudo cargar la nota'
-            });
-        }
-    } else {
-        console.log('No se encontró ID de nota en la URL');
-    }
-
-    // Manejar cambios en el editor
-    quill.on('text-change', function(delta, oldDelta, source) {
-        if (source === 'user' && currentNoteId) {
-            console.log('Cambio en el editor detectado');
-            // Limpiar el timeout anterior si existe
-            if (typingTimeout) clearTimeout(typingTimeout);
-
-            // Establecer un nuevo timeout
-            typingTimeout = setTimeout(() => {
-                const content = quill.root.innerHTML;
-                console.log('Enviando actualización de contenido:', content);
-                socket.emit('update_note_content', {
-                    note_id: currentNoteId,
-                    content: content
-                });
-            }, 1000); // Esperar 1 segundo después del último cambio
-        }
-    });
-
-    /* Configurar el botón de guardar
-    const saveButton = document.getElementById('saveButton');
-    if (saveButton) {
-        saveButton.addEventListener('click', async () => {
-            if (!currentNoteId) return;
-            
-            const content = quill.root.innerHTML;
-            console.log('Guardando contenido:', content);
-            socket.emit('update_note_content', {
-                note_id: currentNoteId,
-                content: content
-            });
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡Guardado!',
-                text: 'La nota se ha guardado correctamente',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        });
-    }*/
-});
-
-// Unirse a la sala de la nota
-function joinNoteRoom(noteId) {
-    if (!noteId) return;
-    
-    currentNoteId = noteId;
-    console.log('Uniendo a la sala de nota:', noteId);
-    socket.emit('join_note', { note_id: noteId });
-    console.log(`Unido a la sala de nota: ${noteId}`);
-}
-
-// Función para cargar una nota específica
-async function loadNote(noteId) {
-    try {
-        console.log('Cargando nota:', noteId);
         
-        // Asegurarnos de que el ID sea un string válido
-        const id = typeof noteId === 'string' ? noteId : 
-                  noteId.$oid ? noteId.$oid : 
-                  noteId.toString();
-        
-        const url = `${API_BASE_URL}/getNote/${id}`;
-        console.log('URL de la petición:', url);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken,
-                'Content-Type': 'application/json'
+        // Configurar el guardado automático cuando el usuario escribe
+        quill.on('text-change', function(delta, oldDelta, source) {
+            if (source === 'user' && currentNoteId) {
+                // Mostrar indicador de "Guardando..."
+                const saveIndicator = document.getElementById('save-indicator');
+                if (saveIndicator) {
+                    saveIndicator.textContent = 'Guardando...';
+                    saveIndicator.classList.add('saving');
+                    saveIndicator.classList.remove('saved', 'error');
+                }
+                
+                // Limpiar el timeout anterior si existe
+                if (saveTimeout) clearTimeout(saveTimeout);
+
+                // Establecer un nuevo timeout para guardar después de 2 segundos de inactividad
+                saveTimeout = setTimeout(() => {
+                    saveNoteContent();
+                }, 2000);
             }
         });
 
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error del servidor:', errorData);
-            throw new Error(`Error del servidor: ${response.status} - ${errorData}`);
-        }
+        // Obtener el ID de la nota de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const noteId = urlParams.get('id');
+        console.log('ID de nota obtenido de URL:', noteId);
 
-        const note = await response.json();
-        console.log('Nota cargada:', note);
-        
-        // Establecer el contenido en el editor
-        if (quill && note.contenido) {
-            console.log('Estableciendo contenido en el editor:', note.contenido);
-            quill.root.innerHTML = note.contenido;
+        if (noteId) {
+            try {
+                // Cargar la nota
+                await loadNote(noteId);
+            } catch (error) {
+                console.error('Error al cargar la nota:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo cargar la nota'
+                });
+            }
         } else {
-            console.warn('No se pudo establecer el contenido:', { 
-                quillExists: !!quill, 
-                contenidoExists: !!note.contenido 
-            });
+            console.log('No se encontró ID de nota en la URL');
+            // Redirigir a la página de notas si no hay ID
+            window.location.href = 'notas.html';
         }
 
     } catch (error) {
-        console.error('Error detallado:', {
-            message: error.message,
-            stack: error.stack,
-            noteId: noteId
-        });
-        throw error;
+        console.error('Error al crear Quill:', error);
     }
-}
-
-// Manejar eventos de Socket.IO
-socket.on('note_updated', (data) => {
-    console.log('Nota actualizada:', data);
-    if (quill && data.content) {
-        const currentContent = quill.root.innerHTML;
-        if (currentContent !== data.content) {
-            console.log('Actualizando contenido en el editor:', data.content);
-            quill.root.innerHTML = data.content;
+    
+    // Agregar botón de guardado manual
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-button';
+    saveButton.className = 'save-button';
+    saveButton.innerHTML = '<i class="bx bx-save"></i> Guardar';
+    saveButton.addEventListener('click', () => {
+        saveNoteContent();
+    });
+    
+    // Agregar estilos para el botón
+    const buttonStyle = document.createElement('style');
+    buttonStyle.textContent = `
+        .save-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #3C91E6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
-    }
+        .save-button:hover {
+            background-color: #2c7dd9;
+            transform: translateY(-2px);
+        }
+        .save-button i {
+            font-size: 18px;
+        }
+    `;
+    document.head.appendChild(buttonStyle);
+    document.body.appendChild(saveButton);
 });
 
-socket.on('user_joined', (data) => {
-    console.log('Usuario conectado:', data.msg);
-    Swal.fire({
-        icon: 'info',
-        title: '¡Usuario conectado!',
-        text: data.msg,
-        timer: 1500,
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false
-    });
-});
-
-socket.on('user_left', (data) => {
-    console.log('Usuario desconectado:', data.msg);
-    Swal.fire({
-        icon: 'info',
-        title: 'Usuario desconectado',
-        text: data.msg,
-        timer: 1500,
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false
-    });
-});
-
-socket.on('error', (data) => {
-    console.error('Error del socket:', data.msg);
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: data.msg
-    });
-});
-
-// Limpiar al salir
-window.addEventListener('beforeunload', () => {
-    if (currentNoteId) {
-        console.log('Saliendo de la sala de nota:', currentNoteId);
-        socket.emit('leave_note', { note_id: currentNoteId });
+// Guardar al salir de la página
+window.addEventListener('beforeunload', (event) => {
+    if (currentNoteId && quill) {
+        const currentContent = quill.root.innerHTML;
+        if (currentContent !== lastSavedContent) {
+            // Intentar guardar síncronamente antes de salir
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', `${API_BASE_URL}/updateNote/${currentNoteId}`, false);
+            xhr.setRequestHeader('Authorization', authToken);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ contenido: currentContent }));
+            
+            // Mensaje para el usuario
+            event.preventDefault();
+            event.returnValue = 'Hay cambios sin guardar. ¿Estás seguro de que quieres salir?';
+            return event.returnValue;
+        }
     }
 });

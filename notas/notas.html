@@ -65,6 +65,157 @@
 		color: var(--dark);
 		margin-top: 20px;
 		}
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (min-height: 600px) {
+            .modal-content {
+                margin: 5vh auto;
+            }
+        }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .checkbox-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .select-all-container {
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .usuarios-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .usuario-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-save {
+            background-color: #3C91E6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background-color: #fff;
+            color: #3C91E6;
+            padding: 10px 20px;
+            border: 1px solid #3C91E6;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Dark mode styles */
+        body.dark .modal-content {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+
+        body.dark .modal-header {
+            background-color: var(--dark);
+            border-color: var(--grey);
+        }
+
+        body.dark .form-group input[type="text"],
+        body.dark .form-group textarea,
+        body.dark .checkbox-container {
+            background-color: var(--dark);
+            color: var(--light);
+            border-color: var(--grey);
+        }
+
+        body.dark .btn-cancel {
+            background-color: var(--dark);
+            color: var(--light);
+            border-color: var(--light);
+        }
     </style>
 
 	<title>Workspace CAA</title>
@@ -176,29 +327,51 @@
 				</div>
 			</div>
 			<h1 class="title">Notas grupales</h1>
-            <div class="notes-grid">
+            <div class="notes-grid" id="groupNotes">
                 
             </div>
-			<!-- 
 			<h1 class="title">Mis notas</h1>
-			<div class="notes-grid">
-                 
-                <div class="note-card" onclick="window.location.href='nota.html?id=1'">
-                    <h3>Reunión de Proyecto</h3>
-                </div>
-                <div class="note-card" onclick="window.location.href='nota.html?id=2'">
-                    <h3>Ideas para Desarrollo</h3>
-                </div>
-                <div class="note-card" onclick="window.location.href='nota.html?id=3'">
-                    <h3>Tareas Pendientes</h3>
-                </div>
+            <div class="notes-grid" id="myNotes">
+                
             </div>
-		-->
+			
 
             <!-- Botón flotante para crear nueva nota -->
-            <button class="create-note-btn" onclick="window.location.href='nota.html'">
+            <button class="create-note-btn" id="btn-create-note">
                 <i class='bx bx-plus'></i>
             </button>
+
+            <!-- Modal para crear nueva nota -->
+            <div id="createNoteModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Crear Nueva Nota</h2>
+                        <span class="close" id="close-create-modal">&times;</span>
+                    </div>
+                    <form id="createNoteForm">
+                        <div class="form-group">
+                            <label for="titulo">Título*:</label>
+                            <input type="text" id="titulo" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Participantes:</label>
+                            <div class="checkbox-container">
+                                <div class="select-all-container">
+                                    <input type="checkbox" id="selectAll" onchange="toggleAllUsers()">
+                                    <label for="selectAll">Seleccionar todos</label>
+                                </div>
+                                <div id="usuariosList" class="usuarios-list">
+                                    <!-- Los checkboxes de usuarios se cargarán dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn-save">Crear Nota</button>
+                            <button type="button" class="btn-cancel" id="cancel-create-modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
 		</main>
 		<!-- MAIN -->
@@ -209,6 +382,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src="../script.js" type="module"></script>
     <script src="notas-list.js" type="module"></script>
+    <script src="notas-modal.js" type="module"></script>
 
 </body>
 </html>

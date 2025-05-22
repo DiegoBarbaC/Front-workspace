@@ -87,10 +87,26 @@
 			<div class="nav-right">
 				<input type="checkbox" id="switch-mode" hidden>
 				<label for="switch-mode" class="switch-mode"></label>
-				<a href="#" class="notification">
-					<i class='bx bxs-bell' ></i>
-					<span class="num">8</span>
-				</a>
+				<div class="notification-container">
+					<a href="#" class="notification" id="notification-icon">
+						<i class='bx bxs-bell'></i>
+						<span class="num" id="notification-count">0</span>
+					</a>
+					<div class="notification-dropdown" id="notification-dropdown">
+						<div class="notification-header">
+							<h3>Notificaciones</h3>
+							<div class="notification-actions">
+								<button id="mark-all-read">Marcar todo como leído</button>
+							</div>
+						</div>
+						<div class="notification-list" id="notification-list">
+							<div class="loading-notifications">Cargando notificaciones...</div>
+						</div>
+						<div class="notification-footer" id="notification-empty" style="display: none;">
+							<p>No tienes notificaciones nuevas</p>
+						</div>
+					</div>
+				</div>
 				<a href="#" class="profile">
 					<img src="img/people.png">
 				</a>
@@ -138,6 +154,6 @@
 
 
 	<script src="script.js" type="module"></script>
-	
+	<script src="notifications.js" type="module"></script>
 </body>
 </html>

@@ -10,6 +10,8 @@ const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
 // Elemento donde se mostrarán las notas
 const notesGrid = document.querySelector('.notes-grid');
+const groupNotesGrid = document.querySelector('#groupNotes');
+const myNotesGrid = document.querySelector('#myNotes');
 
 // Función para crear una tarjeta de nota
 function createNoteCard(note) {
@@ -41,14 +43,26 @@ async function loadNotes() {
         }
 
         const notes = await response.json();
+        // Una nota es grupal cuando tiene 2 o más usuarios en el array
+        const groupNotes = notes.filter(note => note.usuarios && note.usuarios.length >= 2);
+        // Una nota es individual cuando tiene 1 o ningún usuario en el array
+        const myNotes = notes.filter(note => !note.usuarios || note.usuarios.length < 2);
         
         // Limpiar el grid
         notesGrid.innerHTML = '';
-        
-        // Agregar cada nota al grid
-        notes.forEach(note => {
+        groupNotesGrid.innerHTML = '';
+        myNotesGrid.innerHTML = '';
+
+        // Agregar notas grupales (con 2 o más usuarios) al grid de notas grupales
+        groupNotes.forEach(note => {
             const card = createNoteCard(note);
-            notesGrid.appendChild(card);
+            groupNotesGrid.appendChild(card);
+        });
+        
+        // Agregar notas individuales al grid de mis notas
+        myNotes.forEach(note => {
+            const card = createNoteCard(note);
+            myNotesGrid.appendChild(card);
         });
 
     } catch (error) {

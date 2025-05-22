@@ -1,12 +1,5 @@
 import API_BASE_URL from "../config.js";
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar si ya hay un token válido
-    const token = localStorage.getItem('token');
-    if (token) {
-        window.location.replace('../Front-workspace/index.html');
-        return;
-    }
-
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('error-message');
 
