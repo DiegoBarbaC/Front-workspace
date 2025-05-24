@@ -76,24 +76,24 @@
 			<li>
 				<a href="../index.html">
 					<i class='bx bxs-dashboard' ></i>
-					<span class="text">Dashboard</span>
+					<span class="text">Inicio</span>
 				</a>
 			</li>
 			<li>
 				<a href="../calendario/calendario.html">
-					<i class='bx bxs-shopping-bag-alt' ></i>
+					<i class='bx bxs-calendar' ></i>
 					<span class="text">Calendario</span>
 				</a>
 			</li>
 			<li>
 				<a href="../chatbot/chatbot.html">
-					<i class='bx bxs-doughnut-chart' ></i>
+					<i class='bx bx-bot' ></i>
 					<span class="text">Chatbot</span>
 				</a>
 			</li>
 			<li class="active">
-				<a href="../notas/notas.html">
-					<i class='bx bxs-message-dots' ></i>
+				<a href="notas.html">
+					<i class='bx bxs-note' ></i>
 					<span class="text">Notas</span>
 				</a>
 			</li>
@@ -102,13 +102,13 @@
 		<ul class="side-menu">
 			<li>
 				<a href="../configPerfil/configPerfil.html">
-					<i class='bx bxs-cog' ></i>
+					<i class='bx bxs-user-circle' ></i>
 					<span class="text">Configurar perfil</span>
 				</a>
 			</li>
 			<li>
 				<a href="../editarSecciones/editarSecciones.html">
-					<i class='bx bxs-cog' ></i>
+					<i class='bx bxs-edit' ></i>
 					<span class="text">Editar secciones</span>
 				</a>
 			</li>
@@ -158,18 +158,15 @@
 					<h1>Notas</h1>
 					<ul class="breadcrumb">
 						<li>
-							<a href="#">Dashboard</a>
+							<a class="active" href="notas.html">Notas</a>
 						</li>
 						<li><i class='bx bx-chevron-right' ></i></li>
 						<li>
-							<a class="active" href="#">Notas</a>
+							<a id="note-title">Notas</a>
 						</li>
 					</ul>
 				</div>
 				
-			</div>
-			<div class="note-title-container">
-				<h2 id="note-title">Cargando nota...</h2>
 			</div>
 			<div id="editor-container">
                 <div id="editor">
@@ -197,9 +194,23 @@
     <!-- Scripts de la aplicación -->
     <script src="../script.js" type="module"></script>
     <script src="notas.js" type="module"></script>
-
     
-   
+    <!-- Script para corregir la navegación del breadcrumb -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Solo corregir el comportamiento del enlace de la miga de pan
+            const breadcrumbLinks = document.querySelectorAll('.breadcrumb li a');
+            breadcrumbLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevenir comportamiento por defecto
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
