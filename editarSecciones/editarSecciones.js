@@ -127,6 +127,7 @@ function closeModal() {
     document.getElementById('editForm').reset();
     document.body.classList.remove('modal-open'); // Remover clase al cerrar el modal
 }
+window.closeModal = closeModal;
 
 function saveChanges() {
     const token = localStorage.getItem('token');
@@ -167,6 +168,7 @@ function saveChanges() {
     })
     .catch(error => console.error('Error:', error));
 }
+window.saveChanges = saveChanges;
 
 // Función para eliminar la sección
 function deleteSection(sectionId) {
@@ -210,6 +212,7 @@ function closeCreateModal() {
     document.getElementById('createForm').reset();
     document.body.classList.remove('modal-open');
 }
+window.closeCreateModal = closeCreateModal;
 
 async function createSection() {
     if (isProcessing) {

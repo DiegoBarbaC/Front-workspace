@@ -237,6 +237,10 @@ function closeCreateModal() {
     document.getElementById('createForm').reset();
     document.body.classList.remove('modal-open');
 }
+window.closeModal = closeModal;
+window.closeCreateModal = closeCreateModal;
+window.saveChanges = saveChanges;
+window.createUser = createUser;
 
 let isCreatingUser = false;
 // Función para crear usuario
