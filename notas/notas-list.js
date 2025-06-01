@@ -18,6 +18,10 @@ function createNoteCard(note) {
     const card = document.createElement('div');
     card.className = 'note-card';
     
+    card.onclick = (e) => {
+        e.stopPropagation();
+        window.location.href = `nota.html?id=${note._id.$oid}`;
+    };
     // Convertir el ObjectId a string
     const noteId = note._id.$oid || note._id.toString();
     
