@@ -709,61 +709,16 @@
     <!-- Add SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
     <!-- FullCalendar Script -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     
     <!-- Custom script -->
-    <script src="calendario.js" type="module"></script>
     <script src="../script.js" type="module"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
-                },
-                editable: true,
-                selectable: true,
-                selectMirror: true,
-                dayMaxEvents: true,
-                events: [
-                    {
-                        title: 'Evento de ejemplo',
-                        start: new Date(),
-                        allDay: true
-                    }
-                ],
-                select: function(info) {
-                    var title = prompt('Ingrese el título del evento:');
-                    if (title) {
-                        calendar.addEvent({
-                            title: title,
-                            start: info.start,
-                            end: info.end,
-                            allDay: info.allDay
-                        });
-                    }
-                    calendar.unselect();
-                },
-                eventClick: function(info) {
-                    if (confirm('¿Desea eliminar este evento?')) {
-                        info.event.remove();
-                    }
-                },
-                eventDrop: function(info) {
-                    if (!confirm('¿Está seguro de mover el evento "' + info.event.title + '" a ' + info.event.start.toLocaleDateString() + '?')) {
-                        info.revert();
-                    }
-                }
-            });
-            //calendar.render();
-        });
-    </script>
-    <!-- Axios CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="calendario.js" type="module"></script>
+    <!-- No necesitamos una segunda inicialización del calendario aquí -->
 
 </body>
 </html>

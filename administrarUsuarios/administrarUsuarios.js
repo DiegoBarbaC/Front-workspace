@@ -1,4 +1,5 @@
 import API_BASE_URL from "../config.js"
+import axiosInstance, { authService } from '../services/axios-config.js';
 // Variable para almacenar el ID del usuario actual
 let currentUserId;
 //Variable para controlar si hay una peticion en proceso
@@ -7,26 +8,15 @@ let isRequestInProgress = false;
 // Función para cargar los usuarios desde la API
 async function loadUsersFromAPI() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        // Verificar si el usuario está autenticado
+        if (!authService.isAuthenticated()) {
             console.error('No token found');
             window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-        const response = await fetch(`${API_BASE_URL}/getAllUsers`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al obtener los usuarios');
-        }
-
-        const data = await response.json();
+        // Usar axiosInstance para hacer la petición
+        const { data } = await axiosInstance.get('/getAllUsers');
         const tableBody = document.querySelector('table tbody');
         tableBody.innerHTML = '';
 
@@ -67,35 +57,20 @@ async function loadUsersFromAPI() {
 // Función para editar usuario
 function editUser(userId) {
     currentUserId = userId;
-    const token = localStorage.getItem('token');
-    if (!token) {
+    
+    // Verificar si el usuario está autenticado
+    if (!authService.isAuthenticated()) {
         console.error('No token found');
         window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
     console.log("Enviando petición para ID:", userId);
 
-    fetch(`${API_BASE_URL}/getUser/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': authToken,
-            'Content-Type': 'application/json'
-        }
-    })
+    // Usar axiosInstance para hacer la petición
+    axiosInstance.get(`/getUser/${userId}`)
     .then(response => {
-        if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-                return;
-            }
-            throw new Error('Error al obtener el usuario');
-        }
-        return response.json();
-    })
-    .then(data => {
+        const data = response.data;
         console.log("Datos recibidos:", data);
         document.getElementById('editEmail').value = data.email;
         document.getElementById('editEsAdmin').checked = data.admin;
@@ -115,35 +90,32 @@ function editUser(userId) {
 
 // Función para guardar cambios
 function saveChanges() {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (isRequestInProgress) {
+        return;
+    }
+    isRequestInProgress = true;
+    
+    // Verificar si el usuario está autenticado
+    if (!authService.isAuthenticated()) {
         console.error('No token found');
         window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
     const email = document.getElementById('editEmail').value;
     const admin = document.getElementById('editEsAdmin').checked;
     const editar = document.getElementById('editPuedeEditar').checked;
 
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('admin', admin);
-    formData.append('editar', editar);
+    const data = {
+        email: email,
+        admin: admin,
+        editar: editar
+    };
 
-    fetch(`${API_BASE_URL}/updateUser`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': authToken
-        },
-        body: formData
-    })
+    // Usar axiosInstance para hacer la petición
+    axiosInstance.put(`/updateUser/${currentUserId}`, data)
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al actualizar el usuario');
-        }
-        return response.json();
+        return response.data;
     })
     .then(data => {
         closeModal();
@@ -162,6 +134,9 @@ function saveChanges() {
             title: 'Error',
             text: error.message || 'No se pudo actualizar el usuario',
         });
+    })
+    .finally(() => {
+        isRequestInProgress = false;
     });
 }
 
@@ -169,7 +144,7 @@ function saveChanges() {
 function deleteUser(email) {
     Swal.fire({
         title: '¿Estás seguro?',
-        text: "Esta acción no se puede deshacer",
+        text: `¿Realmente deseas eliminar al usuario ${email}?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -178,26 +153,19 @@ function deleteUser(email) {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
-            if (!token) {
+            // Verificar si el usuario está autenticado
+            if (!authService.isAuthenticated()) {
+                console.error('No token found');
                 window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
                 return;
             }
-            const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-            fetch(`${API_BASE_URL}/deleteUser`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authToken
-                },
-                body: JSON.stringify({ email: email })
+            // Usar axiosInstance para hacer la petición
+            axiosInstance.delete('/deleteUser', {
+                data: { email: email }
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al eliminar el usuario');
-                }
-                return response.json();
+                return response.data;
             })
             .then(data => {
                 Swal.fire(
@@ -255,13 +223,12 @@ async function createUser() {
     isCreatingUser = true;
 
     try{
-    const token = localStorage.getItem('token');
-    if (!token) {
+    // Verificar si el usuario está autenticado
+    if (!authService.isAuthenticated()) {
         console.error('No token found');
         window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
         return;
     }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
     const email = document.getElementById('createEmail').value;
     const admin = document.getElementById('createEsAdmin').checked;
@@ -273,21 +240,9 @@ async function createUser() {
         editar: editar
     };
 
-    const response = await fetch(`${API_BASE_URL}/register`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authToken
-        },
-        body: JSON.stringify(data)
-    });
-    if (!response.ok) {
-        return response.json().then(data => {
-            throw new Error(data.message || 'Error al crear el usuario');
-        });
-    }
-
-    const responseData = await response.json();
+    // Usar axiosInstance para hacer la petición
+    const response = await axiosInstance.post('/register', data);
+    const responseData = response.data;
     closeCreateModal();
     await Swal.fire({
         icon: 'success',

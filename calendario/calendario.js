@@ -1,12 +1,15 @@
-import  API_BASE_URL  from '../config.js';
+import API_BASE_URL from '../config.js';
+import axiosInstance, { authService } from '../services/axios-config.js';
 // Verificar autenticación al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Verificar si hay token
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!authService.isAuthenticated()) {
         console.error('No token found');
         window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        return;
     }
+    
+    console.log('Usuario autenticado, iniciando calendario...');
 
     // Agregar event listeners para los botones
     const addEventBtn = document.getElementById('btn-add-event');
@@ -76,8 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
     flatpickr("#fechaFin", dateTimeConfig);
     flatpickr("#viewFechaInicio", dateTimeConfig);
     flatpickr("#viewFechaFin", dateTimeConfig);
-
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    
+    console.log('Configurando calendario...');
 
     // Inicializar el calendario
     var calendarEl = document.getElementById('calendar');
@@ -121,8 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem('token');
-                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
+                // Usar el servicio de autenticación para cerrar sesión
+                authService.logout();
             }
         });
     }
@@ -163,21 +166,15 @@ document.addEventListener('DOMContentLoaded', function() {
 // Función para cargar usuarios en la lista de checkboxes
 async function loadUsers() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        
-        const response = await fetch(`${API_BASE_URL}/getAllUsers`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken
-            }
-        });
+        if (!authService.isAuthenticated()) {
+            console.error('No autenticado en loadUsers');
+            return;
+        }
 
-        if (!response.ok) throw new Error('Error al obtener usuarios');
-        
-        const data = await response.json();
+        console.log('Cargando usuarios...');
+        // Usar axiosInstance para hacer la petición
+        const { data } = await axiosInstance.get('/getAllUsers');
+        console.log('Datos de usuarios recibidos:', data);
         const users = JSON.parse(data.usuarios);
         const usuariosList = document.getElementById('usuariosList');
         
@@ -250,66 +247,62 @@ function toggleAllUsers() {
 async function handleCreateEvent(event) {
     event.preventDefault();
     
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-        return;
-    }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-
-    // Obtener valores del formulario
-    const titulo = document.getElementById('titulo').value;
-    const descripcion = document.getElementById('descripcion').value;
-    const fechaInicio = document.getElementById('fechaInicio').value;
-    const fechaFin = document.getElementById('fechaFin').value;
-    
-    // Obtener usuarios seleccionados
-    const usuariosSeleccionados = Array.from(document.querySelectorAll('.user-checkbox:checked'))
-        .map(checkbox => checkbox.value);
-
-    // Validar que al menos un usuario esté seleccionado
-    if (usuariosSeleccionados.length === 0) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Debe seleccionar al menos un usuario'
-        });
-        return;
-    }
-
-    // Validar fechas
-    if (new Date(fechaInicio) > new Date(fechaFin)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'La fecha de inicio debe ser anterior a la fecha de fin'
-        });
-        return;
-    }
-
-    // Crear FormData
-    const formData = new FormData();
-    formData.append('titulo', titulo);
-    formData.append('descripcion', descripcion);
-    formData.append('fechaInicio', fechaInicio);
-    formData.append('fechaFin', fechaFin);
-    usuariosSeleccionados.forEach(usuario => {
-        formData.append('usuarios', usuario);
-    });
-
     try {
-        const response = await fetch(`${API_BASE_URL}/addEvent`, {
-            method: 'POST',
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            return;
+        }
+
+        // Obtener valores del formulario
+        const titulo = document.getElementById('titulo').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        
+        // Obtener usuarios seleccionados
+        const usuariosSeleccionados = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+            .map(checkbox => checkbox.value);
+
+        // Validar que al menos un usuario esté seleccionado
+        if (usuariosSeleccionados.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Debe seleccionar al menos un usuario'
+            });
+            return;
+        }
+
+        // Validar fechas
+        if (new Date(fechaInicio) > new Date(fechaFin)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'La fecha de inicio debe ser anterior a la fecha de fin'
+            });
+            return;
+        }
+
+        // Crear FormData
+        const formData = new FormData();
+        formData.append('titulo', titulo);
+        formData.append('descripcion', descripcion);
+        formData.append('fechaInicio', fechaInicio);
+        formData.append('fechaFin', fechaFin);
+        usuariosSeleccionados.forEach(usuario => {
+            formData.append('usuarios', usuario);
+        });
+        
+        console.log('Datos del evento a enviar (FormData):', [...formData.entries()]);
+
+        // Enviar datos al servidor usando axiosInstance con configuración especial para FormData
+        const { data: responseData } = await axiosInstance.post('/addEvent', formData, {
             headers: {
-                'Authorization': authToken
-            },
-            body: formData
+                'Content-Type': 'multipart/form-data'
+            }
         });
 
-        if (!response.ok) throw new Error('Error al crear el evento');
-
-        const data = await response.json();
-        
         Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
@@ -368,21 +361,7 @@ async function showEventDetails(event) {
         usuariosList.innerHTML = '';
         
         // Obtener todos los usuarios
-        const token = localStorage.getItem('token');
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        
-        const response = await fetch(`${API_BASE_URL}/getAllUsers`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al obtener usuarios');
-        }
-        
-        const data = await response.json();
+        const { data } = await axiosInstance.get('/getAllUsers');
         const users = JSON.parse(data.usuarios);
         const eventUsers = event.extendedProps.usuarios || [];
         
@@ -464,9 +443,10 @@ async function showEventDetails(event) {
 async function handleEditEvent() {
     try {
         const eventId = String(document.getElementById('eventId').value);
-        const token = localStorage.getItem('token');
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        
+        if (!eventId) {
+            throw new Error('ID de evento no encontrado');
+        }
+
         // Obtener usuarios seleccionados
         const usuariosSeleccionados = Array.from(
             document.querySelectorAll('#viewUsuariosList .user-checkbox:checked:not(#viewSelectAll)')
@@ -476,31 +456,25 @@ async function handleEditEvent() {
         const fechaInicio = formatDateTimeForServer(document.getElementById('viewFechaInicio').value);
         const fechaFin = formatDateTimeForServer(document.getElementById('viewFechaFin').value);
         
-        // Crear FormData con los datos del evento
+        // Crear FormData
         const formData = new FormData();
         formData.append('titulo', document.getElementById('viewTitulo').value);
         formData.append('descripcion', document.getElementById('viewDescripcion').value);
         formData.append('fechaInicio', fechaInicio);
         formData.append('fechaFin', fechaFin);
-        
-        // Agregar cada usuario individualmente al FormData
-        usuariosSeleccionados.forEach(userId => {
-            formData.append('usuarios', userId);
+        usuariosSeleccionados.forEach(usuario => {
+            formData.append('usuarios', usuario);
         });
         
-        const response = await fetch(`${API_BASE_URL}/updateEvent/${eventId}`, {
-            method: 'PUT',
+        console.log('Datos del evento a actualizar (FormData):', [...formData.entries()]);
+        
+        // Enviar datos al servidor usando axiosInstance con configuración especial para FormData
+        const { data } = await axiosInstance.put(`/updateEvent/${eventId}`, formData, {
             headers: {
-                'Authorization': authToken
-            },
-            body: formData
+                'Content-Type': 'multipart/form-data'
+            }
         });
         
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Error al actualizar el evento');
-        }
-
         // Esperar a que se complete la actualización
         await loadEvents();
         
@@ -611,32 +585,35 @@ async function handleDeleteEvent() {
 // Función para cargar eventos
 async function loadEvents(info, successCallback, failureCallback) {
     try {
-        const token = localStorage.getItem('token');
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        if (!token) return;
+        if (!authService.isAuthenticated()) {
+            console.error('No autenticado en loadEvents');
+            return;
+        }
 
-        const response = await fetch(`${API_BASE_URL}/getEvents`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken
-            }
-        });
-
-        if (!response.ok) throw new Error('Error al cargar eventos');
-
-        const data = await response.json();
+        console.log('Cargando eventos del calendario...');
+        // Usar axiosInstance para hacer la petición
+        const { data } = await axiosInstance.get('/getEvents');
         console.log('Eventos recibidos:', data.eventos);
+
+        // Si no hay eventos, devolver array vacío
+        if (!data.eventos || !Array.isArray(data.eventos)) {
+            console.log('No hay eventos o formato incorrecto');
+            if (successCallback) {
+                successCallback([]);
+            }
+            return;
+        }
 
         const events = data.eventos.map(evento => {
             return {
-                id: evento.id,
-                title: evento.title,
-                start: new Date(evento.start),
-                end: new Date(evento.end),
+                id: evento.id || evento._id,
+                title: evento.title || evento.titulo,
+                start: new Date(evento.start || evento.fechaInicio),
+                end: new Date(evento.end || evento.fechaFin),
                 extendedProps: {
-                    descripcion: evento.description,
+                    descripcion: evento.description || evento.descripcion,
                     usuarios: evento.usuarios || [],
-                    creador_id: evento.creador_id
+                    creador_id: evento.creador_id || evento.creador
                 }
             };
         });
@@ -679,12 +656,9 @@ function formatDateTimeForServer(dateStr) {
 // Función para sincronizar con Outlook
 async function syncWithOutlook() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        if (!authService.isAuthenticated()) {
             throw new Error('No se encontró token de autenticación');
         }
-        
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         
         const result = await Swal.fire({
             title: 'Sincronización con Outlook',
