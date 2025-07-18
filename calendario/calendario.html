@@ -646,9 +646,10 @@
                         <div class="form-group">
                             <label>Usuarios*:</label>
                             <div class="checkbox-container">
-                                <div class="select-all-container">
-                                    <input type="checkbox" id="selectAll" onchange="toggleAllUsers()">
+                                <div class="select-all-container" style="display: flex; align-items: center;">
+                                    
                                     <label for="selectAll">Seleccionar todos</label>
+                                    <input type="checkbox" id="selectAll" onchange="toggleAllUsers()">
                                 </div>
                                 <div id="usuariosList" class="usuarios-list">
                                     <!-- Los checkboxes de usuarios se cargarán dinámicamente -->

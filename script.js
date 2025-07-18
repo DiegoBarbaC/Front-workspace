@@ -1,6 +1,7 @@
 const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
 import API_BASE_URL from "./config.js";
-import NotificationManager from './notifications.js';
+import axiosInstance, { authService } from './services/axios-config.js';
+
 
 allSideMenu.forEach(item=> {
 	const li = item.parentElement;
@@ -76,30 +77,20 @@ async function loadCardsFromAPI() {
         const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
         console.log('Token de autorización:', authToken); // Debug
 
-        const response = await fetch(`${API_BASE_URL}/user/sections`, {
-            method: 'GET',
+        // Usar axiosInstance para hacer la petición
+        const { data: sections } = await axiosInstance.get('/user/sections', {
             headers: {
                 'Authorization': authToken,
                 'Content-Type': 'application/json'
             }
         });
+        
+        console.log('Response data:', sections);
 
-        const responseData = await response.json();
-        console.log('Response status:', response.status);
-        console.log('Response data:', responseData);
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-                return;
-            }
-            throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(responseData)}`);
+        if (!sections) {
+            throw new Error('No data received from server');
         }
 
-        const sections = responseData;
-        console.log('Secciones recibidas:', sections); // Debug
-        
         const grid = document.getElementById('sortable-grid');
         if (!grid) {
             console.error('Grid element not found');
@@ -167,24 +158,15 @@ async function saveCardOrder() {
                 return;
             }
 
-            fetch(`${API_BASE_URL}/user/sections/order`, {
-                method: 'PUT',
+            // Usar axiosInstance para hacer la petición
+            axiosInstance.put('/user/sections/order', { sections: newOrder }, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token
-                },
-                body: JSON.stringify({ sections: newOrder })
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.msg || 'Error al guardar el orden');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Orden guardado:', data);
+                console.log('Orden guardado:', response.data);
                 Swal.fire(
                     '¡Guardado!',
                     'El orden de las secciones ha sido actualizado.',
@@ -266,17 +248,13 @@ async function removeSection(sectionId) {
             return;
         }
 
-        const response = await fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
-            method: 'DELETE',
+        // Usar axiosInstance para hacer la petición
+        await axiosInstance.delete(`/user/sections/${sectionId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         // Recargar las secciones después de eliminar
         await loadCardsFromAPI();
