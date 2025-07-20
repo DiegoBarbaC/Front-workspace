@@ -154,7 +154,7 @@ async function saveCardOrder() {
         if (result.isConfirmed) {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
+                window.location.href = 'login/login.html';
                 return;
             }
 
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        window.location.replace('login/login.html');
         return;
     }
 
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Redirigir al login
                 //ruta absoluta
-                window.location.href = '/Dashboard CAA/Front-workspace/login/login.html';
+                window.location.href = 'login/login.html';
             }
         });
     }
