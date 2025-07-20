@@ -102,7 +102,7 @@ axiosInstance.interceptors.response.use(
                 if (!refreshToken) {
                     // Si no hay refresh token, redirigir al login
                     clearTokens();
-                    window.location.href = '/login/index.html';
+                    window.location.href = '/login/login.html';
                     return Promise.reject(error);
                 }
 
@@ -128,14 +128,14 @@ axiosInstance.interceptors.response.use(
                 } else {
                     // Si no se pudo renovar, redirigir al login
                     clearTokens();
-                    window.location.href = '/login/index.html';
+                    window.location.href = '/login/login.html';
                     return Promise.reject(new Error('No se pudo renovar el token'));
                 }
             } catch (refreshError) {
                 // Si hay error al renovar, redirigir al login
                 isRefreshing = false;
                 clearTokens();
-                window.location.href = '/login/index.html';
+                window.location.href = '/login/login.html';
                 return Promise.reject(refreshError);
             }
         }
@@ -177,7 +177,7 @@ const authService = {
         } finally {
             // Siempre limpiar tokens locales
             clearTokens();
-            window.location.href = '/login/index.html';
+            window.location.href = '/login/login.html';
         }
     },
     
