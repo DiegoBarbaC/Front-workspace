@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para cargar la lista de usuarios
     async function loadUsers() {
         try {
-            console.log('Intentando cargar usuarios desde:', `${API_BASE_URL}/getUsersForNotes`);
+            
             
             const response = await fetch(`${API_BASE_URL}/getUsersForNotes`, {
                 headers: {

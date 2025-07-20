@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = document.getElementById('password').value.toString();
 
         try {
-            console.log('Intentando conectar a:', API_BASE_URL + '/login');
+            
             
             // Usar el servicio de autenticación en lugar de fetch
             const result = await authService.login(username, password);
