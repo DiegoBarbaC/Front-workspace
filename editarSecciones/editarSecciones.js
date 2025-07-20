@@ -1,76 +1,52 @@
 let isProcessing = false;
 import API_BASE_URL from "../config.js";
+import axiosInstance, { authService } from '../services/axios-config.js';
+
 async function loadCardsFromAPI() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        if (!authService.isAuthenticated()) {
             console.error('No token found');
             window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
 
-        // Asegurar que el token tenga el formato correcto
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        console.log('Token de autorización:', authToken); // Debug
-
-        const response = await fetch(`${API_BASE_URL}/user/sections`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const responseData = await response.json();
-        console.log('Response status:', response.status);
-        console.log('Response data:', responseData);
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-                return;
-            }
-            throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(responseData)}`);
-        }
-
-        const sections = responseData;
-        console.log('Secciones recibidas:', sections); // Debug
+        console.log('Cargando secciones...');
+        const { data: sections } = await axiosInstance.get('/user/sections');
+        console.log('Secciones recibidas:', sections);
 
         const tableBody = document.getElementById('sectionsTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Limpiar el contenido anterior
+        tableBody.innerHTML = ''; // Limpiar el contenido anterior
         
-            sections.forEach(section => {
-                const row = tableBody.insertRow();
-                
-                row.insertCell(0).innerText = section.titulo; // Título
-                row.insertCell(1).innerText = section.descripcion; // Descripción
-                row.insertCell(2).innerHTML = `<a href="${section.link}">${section.link}</a>`; // Link
-                row.insertCell(3).innerHTML = section.imagen ? `<img class="section-image" src="data:image/jpeg;base64,${section.imagen}" alt="${section.titulo}" style="width: 50px; height: auto;">` : 'Sin imagen'; // Imagen
-                
-                // Crear el botón de editar
-                const editButton = document.createElement('button');
-                editButton.innerText = 'Editar';
-                editButton.className = 'edit-button'; // Clase para estilos (opcional)
-                editButton.onclick = function() {
-                    
-                    editSection(section._id); // Llama a la función de edición pasando el ID de la sección
-                    console.log(section._id);
-                };
+        sections.forEach(section => {
+            const row = tableBody.insertRow();
+            
+            row.insertCell(0).innerText = section.titulo; // Título
+            row.insertCell(1).innerText = section.descripcion; // Descripción
+            row.insertCell(2).innerHTML = `<a href="${section.link}">${section.link}</a>`; // Link
+            row.insertCell(3).innerHTML = section.imagen ? `<img class="section-image" src="data:image/jpeg;base64,${section.imagen}" alt="${section.titulo}" style="width: 50px; height: auto;">` : 'Sin imagen'; // Imagen
+            
+            // Crear el botón de editar
+            const editButton = document.createElement('button');
+            editButton.innerText = 'Editar';
+            editButton.className = 'edit-button'; // Clase para estilos (opcional)
+            editButton.onclick = function() {
+                editSection(section._id); // Llama a la función de edición pasando el ID de la sección
+                console.log(section._id);
+            };
 
-                // Crear el botón de eliminar
-                const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Eliminar';
-                deleteButton.className = 'delete-button'; // Clase para estilos (opcional)
-                deleteButton.onclick = function() {
-                    deleteSection(section._id); // Llama a la función de eliminación pasando el ID de la sección
-                };
-                
-                // Insertar el botón de eliminar en la última celda
-                const cell = row.insertCell(4);
-                cell.appendChild(editButton);
-                cell.appendChild(deleteButton);
-            });
+            // Crear el botón de eliminar
+            const deleteButton = document.createElement('button');
+            deleteButton.innerText = 'Eliminar';
+            deleteButton.className = 'delete-button'; // Clase para estilos (opcional)
+            deleteButton.onclick = function() {
+                deleteSection(section._id); // Llama a la función de eliminación pasando el ID de la sección
+            };
+            
+            // Insertar el botón de eliminar en la última celda
+            const cell = row.insertCell(4);
+            cell.appendChild(editButton);
+            cell.appendChild(deleteButton);
+        });
     } catch (error) {
         console.error('Error completo:', error);
         console.error('Stack trace:', error.stack);
@@ -79,29 +55,18 @@ async function loadCardsFromAPI() {
 
 let currentSectionId; // Variable para almacenar el ID de la sección actual
 
-function editSection(sectionId) {
-    currentSectionId = sectionId;
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-        return;
-    }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+async function editSection(sectionId) {
+    try {
+        currentSectionId = sectionId;
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            return;
+        }
 
-    fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': authToken
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al obtener la sección');
-        }
-        return response.json();
-    })
-    .then(section => {
+        console.log('Editando sección:', sectionId);
+        const { data: section } = await axiosInstance.get(`/user/sections/${sectionId}`);
+        
         document.getElementById('editTitle').value = section.titulo;
         document.getElementById('editDescription').value = section.descripcion;
         document.getElementById('editLink').value = section.link;
@@ -117,8 +82,14 @@ function editSection(sectionId) {
         
         document.getElementById('editModal').style.display = 'block';
         document.body.classList.add('modal-open'); // Agregar clase para prevenir scroll
-    })
-    .catch(error => console.error('Error:', error));
+    } catch (error) {
+        console.error('Error al cargar la sección:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo cargar la información de la sección'
+        });
+    }
 }
 
 function closeModal() {
@@ -129,76 +100,96 @@ function closeModal() {
 }
 window.closeModal = closeModal;
 
-function saveChanges() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-        return;
-    }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-
-    const formData = new FormData();
-    formData.append('titulo', document.getElementById('editTitle').value);
-    formData.append('descripcion', document.getElementById('editDescription').value);
-    formData.append('link', document.getElementById('editLink').value);
-
-    const imageFile = document.getElementById('editImage').files[0];
-    if (imageFile) {
-        formData.append('imagen', imageFile);
-    }
-
-    fetch(`${API_BASE_URL}/editSection/${currentSectionId}`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': authToken
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al actualizar la sección');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Sección actualizada:', data);
-        closeModal();
-        window.location.reload();
-    })
-    .catch(error => console.error('Error:', error));
-}
-window.saveChanges = saveChanges;
-
-// Función para eliminar la sección
-function deleteSection(sectionId) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta sección?')) {
-        const token = localStorage.getItem('token');
-        if (!token) {
+async function saveChanges() {
+    try {
+        if (!authService.isAuthenticated()) {
             console.error('No token found');
             window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-        fetch(`${API_BASE_URL}/user/sections/${sectionId}`, {
-            method: 'DELETE',
+        const titulo = document.getElementById('editTitle').value;
+        const descripcion = document.getElementById('editDescription').value;
+        const link = document.getElementById('editLink').value;
+        const imageFile = document.getElementById('editImage').files[0];
+
+        const formData = new FormData();
+        formData.append('titulo', titulo);
+        formData.append('descripcion', descripcion);
+        formData.append('link', link);
+        
+        // Solo agregar la imagen si se seleccionó una nueva
+        if (imageFile) {
+            formData.append('imagen', imageFile);
+        }
+
+        console.log('Actualizando sección:', currentSectionId);
+        const { data } = await axiosInstance.put(`/editSection/${currentSectionId}`, formData, {
             headers: {
-                'Authorization': authToken
+                'Content-Type': 'multipart/form-data'
             }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al eliminar la sección');
-            }
-            return response.json();
-        })
-        .then(data => {
+        });
+        
+        console.log('Sección actualizada:', data);
+        closeModal();
+        Swal.fire({
+            icon: 'success',
+            title: '¡Sección actualizada!',
+            text: 'La sección ha sido actualizada exitosamente',
+        });
+        loadCardsFromAPI(); // Recargar las tarjetas
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo actualizar la sección',
+        });
+    }
+}
+window.saveChanges = saveChanges;
+
+// Función para eliminar la sección
+async function deleteSection(sectionId) {
+    try {
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            console.log('Eliminando sección:', sectionId);
+            const { data } = await axiosInstance.delete(`/user/sections/${sectionId}`);
+            
             console.log('Sección eliminada:', data);
-            window.location.reload(); // Recargar las secciones para reflejar los cambios
-        })
-        .catch(error => console.error('Error al eliminar la sección:', error));
-}}
+            Swal.fire(
+                '¡Eliminada!',
+                'La sección ha sido eliminada.',
+                'success'
+            );
+            loadCardsFromAPI(); // Recargar las tarjetas
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo eliminar la sección',
+        });
+    }
+}
 
 // Funciones globales para los modales
 function openCreateModal() {
@@ -208,78 +199,71 @@ function openCreateModal() {
 
 function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
-    document.getElementById('createPreviewImg').style.display = 'none';
     document.getElementById('createForm').reset();
+    document.getElementById('createPreviewImg').style.display = 'none';
     document.body.classList.remove('modal-open');
 }
 window.closeCreateModal = closeCreateModal;
 
 async function createSection() {
-    if (isProcessing) {
-        return;
-    }
+    if (isProcessing) return;
     
-    const createButton = document.getElementById('createSection');
-    createButton.disabled = true;
-    createButton.innerHTML = 'Creando...';
-    isProcessing = true;
-    try{
-        const token = localStorage.getItem('token');
-        if (!token) {
+    try {
+        isProcessing = true;
+        const createButton = document.getElementById('createSection');
+        createButton.disabled = true;
+        createButton.innerHTML = 'Creando...';
+
+        if (!authService.isAuthenticated()) {
             console.error('No token found');
             window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
-        const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        // Validar que todos los campos estén llenos
+
         const titulo = document.getElementById('createTitle').value;
         const descripcion = document.getElementById('createDescription').value;
-    const link = document.getElementById('createLink').value;
-    const imagen = document.getElementById('createImage').files[0];
+        const link = document.getElementById('createLink').value;
+        const imagen = document.getElementById('createImage').files[0];
 
-    if (!titulo || !descripcion || !link || !imagen) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Campos incompletos',
-            text: 'Todos los campos son obligatorios',
+        if (!titulo || !descripcion || !link || !imagen) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Campos incompletos',
+                text: 'Todos los campos son obligatorios',
+            });
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('titulo', titulo);
+        formData.append('descripcion', descripcion);
+        formData.append('link', link);
+        formData.append('imagen', imagen);
+
+        console.log('Creando nueva sección...');
+        const { data } = await axiosInstance.post('/createGlobalSection', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         });
-        return;
-    }
-    const formData = new FormData();
-    formData.append('titulo', titulo);
-    formData.append('descripcion', descripcion);
-    formData.append('link', link);
-    formData.append('imagen', imagen);
-
-    const response = await fetch(`${API_BASE_URL}/createGlobalSection`, {
-        method: 'POST',
-        headers: {
-            'Authorization': authToken
-        },
-        body: formData
-    })
-    if (!response.ok) {
-        return response.json().then(data => {
-            throw new Error(data.message || 'Error al crear la seccón');
+        
+        console.log('Sección creada:', data);
+        closeCreateModal();
+        await Swal.fire({
+            icon: 'success',
+            title: '¡Sección creada!',
+            text: 'La sección ha sido creada exitosamente',
         });
-    }
-    closeCreateModal();
-    await Swal.fire({
-        icon: 'success',
-        title: '¡Sección creada!',
-        text: 'La sección ha sido creada exitosamente',
-    });
-    window.location.reload();
-
-    }catch(error){
+        window.location.reload();
+    } catch (error) {
         console.error('Error:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Error',
             text: error.message || 'No se pudo crear la sección',
         });
-
-    }finally{
+    } finally {
+        const createButton = document.getElementById('createSection');
         createButton.disabled = false;
         createButton.innerHTML = 'Crear sección';
         isProcessing = false;

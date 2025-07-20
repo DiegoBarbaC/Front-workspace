@@ -1,4 +1,5 @@
-import  API_BASE_URL  from '../config.js';
+import API_BASE_URL from '../config.js';
+import axiosInstance, { authService } from '../services/axios-config.js';
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos del usuario
     loadUserData();
@@ -24,30 +25,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function loadUserData() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-        return;
-    }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-
-    // Obtener el ID del usuario del token
-    const tokenParts = token.split('.');
-    const payload = JSON.parse(atob(tokenParts[1]));
-    var userId = String(payload.sub); // El ID del usuario está en el campo 'sub' del tokenpayload.sub; // El ID del usuario está en el campo 'sub' del token
-    console.log(userId);
-    fetch(`${API_BASE_URL}/getUser/${userId}`, {
-        headers: {
-            'Authorization': authToken
+async function loadUserData() {
+    try {
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            return;
         }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('No se pudo obtener la información del usuario');
-        return response.json();
-    })
-    .then(data => {
-        console.log(data);
+
+        // Obtener el ID del usuario del token
+        const token = localStorage.getItem('token').replace('Bearer ', '');
+        const tokenParts = token.split('.');
+        const payload = JSON.parse(atob(tokenParts[1]));
+        const userId = String(payload.sub);
+        console.log('User ID:', userId);
+
+        const { data } = await axiosInstance.get(`/getUser/${userId}`);
+        console.log('User data:', data);
+        
         document.getElementById('userEmail').textContent = data.email;
         if (data.fechaCumple) {
             document.getElementById('birthday').value = data.fechaCumple;
@@ -55,15 +50,14 @@ function loadUserData() {
         if (data.foto) {
             document.getElementById('profileImage').src = `data:image/jpeg;base64,${data.foto}`;
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'No se pudo cargar la información del usuario'
         });
-    });
+    }
 }
 
 function handleImageUpload(event) {
@@ -87,69 +81,65 @@ function handleImageUpload(event) {
     reader.readAsDataURL(file);
 }
 
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
     event.preventDefault();
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
-        return;
-    }
-    const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-
-    const birthday = document.getElementById('birthday').value;
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    // Validar contraseñas si se están cambiando
-    if (newPassword || confirmPassword) {
-        if (!currentPassword) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Por favor, ingresa tu contraseña actual'
-            });
+    try {
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
             return;
         }
-        if (newPassword !== confirmPassword) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Las contraseñas nuevas no coinciden'
-            });
-            return;
+
+        const birthday = document.getElementById('birthday').value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // Validar contraseñas si se están cambiando
+        if (newPassword || confirmPassword) {
+            if (!currentPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Por favor, ingresa tu contraseña actual'
+                });
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Las contraseñas nuevas no coinciden'
+                });
+                return;
+            }
         }
-    }
 
-    // Obtener el email del usuario del elemento HTML
-    const email = document.getElementById('userEmail').textContent;
+        // Obtener el email del usuario del elemento HTML
+        const email = document.getElementById('userEmail').textContent;
 
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('fechaCumple', birthday);
-    if (currentPassword && newPassword) {
-        formData.append('password', newPassword);
-    }
-    
-    // Agregar la imagen si se seleccionó una
-    const imageFile = document.getElementById('imageInput').files[0];
-    if (imageFile) {
-        formData.append('foto', imageFile);
-    }
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('fechaCumple', birthday);
+        if (currentPassword && newPassword) {
+            formData.append('password', newPassword);
+        }
+        
+        // Agregar la imagen si se seleccionó una
+        const imageFile = document.getElementById('imageInput').files[0];
+        if (imageFile) {
+            formData.append('foto', imageFile);
+        }
 
-    fetch(`${API_BASE_URL}/updateUser`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': authToken
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Error al actualizar el perfil');
-        return response.json();
-    })
-    .then(data => {
+        console.log('Enviando datos del perfil:', [...formData.entries()]);
+
+        const { data } = await axiosInstance.put('/updateUser', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
         Swal.fire({
             icon: 'success',
             title: 'Éxito',
@@ -160,13 +150,12 @@ function handleFormSubmit(event) {
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         });
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'No se pudo actualizar el perfil'
         });
-    });
+    }
 }

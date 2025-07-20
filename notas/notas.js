@@ -1,13 +1,12 @@
 import API_BASE_URL from "../config.js";
+import axiosInstance, { authService } from '../services/axios-config.js';
 
 console.log('Iniciando script de notas.js');
 
-const token = localStorage.getItem('token');
-if (!token) {
+if (!authService.isAuthenticated()) {
     console.error('No token found');
     window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
 }
-const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
 // Variables globales
 let quill;
@@ -28,24 +27,8 @@ async function loadNote(noteId) {
         
         currentNoteId = id;
         
-        const url = `${API_BASE_URL}/getNote/${id}`;
-        console.log('URL de la petición:', url);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': authToken,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error del servidor:', errorData);
-            throw new Error(`Error del servidor: ${response.status} - ${errorData}`);
-        }
-
-        const note = await response.json();
+        console.log('Realizando petición para obtener nota:', id);
+        const { data: note } = await axiosInstance.get(`/getNote/${id}`);
         console.log('Nota cargada:', note);
         
         // Actualizar el título de la nota en la página
@@ -98,24 +81,11 @@ async function saveNoteContent() {
     try {
         console.log('Guardando nota:', currentNoteId);
         
-        const response = await fetch(`${API_BASE_URL}/updateNote/${currentNoteId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': authToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contenido: currentContent
-            })
+        const { data } = await axiosInstance.put(`/updateNote/${currentNoteId}`, {
+            contenido: currentContent
         });
         
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error al guardar nota:', errorData);
-            throw new Error(`Error al guardar: ${response.status} - ${errorData}`);
-        }
-        
-        console.log('Nota guardada correctamente');
+        console.log('Nota guardada correctamente:', data);
         lastSavedContent = currentContent;
         
         // Mostrar indicador de guardado (opcional)
@@ -308,12 +278,14 @@ window.addEventListener('beforeunload', (event) => {
     if (currentNoteId && quill) {
         const currentContent = quill.root.innerHTML;
         if (currentContent !== lastSavedContent) {
-            // Intentar guardar síncronamente antes de salir
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', `${API_BASE_URL}/updateNote/${currentNoteId}`, false);
-            xhr.setRequestHeader('Authorization', authToken);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify({ contenido: currentContent }));
+            // Intentar guardar síncronamente antes de salir usando axios
+            try {
+                axiosInstance.put(`/updateNote/${currentNoteId}`, {
+                    contenido: currentContent
+                });
+            } catch (error) {
+                console.error('Error al guardar antes de salir:', error);
+            }
             
             // Mensaje para el usuario
             event.preventDefault();
