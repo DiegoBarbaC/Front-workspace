@@ -6,7 +6,7 @@ async function loadCardsFromAPI() {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -60,7 +60,7 @@ async function editSection(sectionId) {
         currentSectionId = sectionId;
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -104,7 +104,7 @@ async function saveChanges() {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -154,7 +154,7 @@ async function deleteSection(sectionId) {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -216,7 +216,7 @@ async function createSection() {
 
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 

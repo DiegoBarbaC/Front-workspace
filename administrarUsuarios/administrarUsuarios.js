@@ -11,7 +11,7 @@ async function loadUsersFromAPI() {
         // Verificar si el usuario está autenticado
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -61,7 +61,7 @@ function editUser(userId) {
     // Verificar si el usuario está autenticado
     if (!authService.isAuthenticated()) {
         console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        window.location.replace('../login/login.html');
         return;
     }
 
@@ -98,7 +98,7 @@ function saveChanges() {
     // Verificar si el usuario está autenticado
     if (!authService.isAuthenticated()) {
         console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        window.location.replace('../login/login.html');
         return;
     }
 
@@ -156,7 +156,7 @@ function deleteUser(email) {
             // Verificar si el usuario está autenticado
             if (!authService.isAuthenticated()) {
                 console.error('No token found');
-                window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+                window.location.replace('../login/login.html');
                 return;
             }
 
@@ -226,7 +226,7 @@ async function createUser() {
     // Verificar si el usuario está autenticado
     if (!authService.isAuthenticated()) {
         console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        window.location.replace('../login/login.html');
         return;
     }
 

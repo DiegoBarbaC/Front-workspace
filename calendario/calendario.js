@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Verificar si hay token
     if (!authService.isAuthenticated()) {
         console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+        window.location.replace('../login/login.html');
         return;
     }
     
@@ -250,7 +250,7 @@ async function handleCreateEvent(event) {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 

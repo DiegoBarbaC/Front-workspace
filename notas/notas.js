@@ -5,7 +5,7 @@ console.log('Iniciando script de notas.js');
 
 if (!authService.isAuthenticated()) {
     console.error('No token found');
-    window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+    window.location.replace('../login/login.html');
 }
 
 // Variables globales
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else {
             console.log('No se encontró ID de nota en la URL');
             // Redirigir a la página de notas si no hay ID
-            window.location.href = 'notas.html';
+            window.location.href = '../notas.html';
         }
 
     } catch (error) {

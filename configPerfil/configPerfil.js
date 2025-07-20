@@ -29,7 +29,7 @@ async function loadUserData() {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
@@ -87,7 +87,7 @@ async function handleFormSubmit(event) {
     try {
         if (!authService.isAuthenticated()) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('../login/login.html');
             return;
         }
 
