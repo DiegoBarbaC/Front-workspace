@@ -69,7 +69,7 @@ async function loadCardsFromAPI() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+            window.location.replace('login/login.html');
             return;
         }
 
