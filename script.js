@@ -272,6 +272,18 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.replace('login/login.html');
         return;
     }
+    const isAdmin = localStorage.getItem('admin') === 'true';
+    const canEdit = localStorage.getItem('editar') === 'true';
+
+    // Oculta los elementos solo para admin si no es admin
+    document.querySelectorAll('.admin-only').forEach(el => {
+        if (!isAdmin) el.style.display = 'none';
+    });
+
+    // Oculta los elementos solo para editar si no es admin ni editor
+    document.querySelectorAll('.edit-only').forEach(el => {
+        if (!(isAdmin || canEdit)) el.style.display = 'none';
+    });
 
     // Cargar las tarjetas
     loadCardsFromAPI();
