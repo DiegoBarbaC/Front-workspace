@@ -106,14 +106,17 @@ function saveChanges() {
     const admin = document.getElementById('editEsAdmin').checked;
     const editar = document.getElementById('editPuedeEditar').checked;
 
-    const data = {
-        email: email,
-        admin: admin,
-        editar: editar
-    };
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('admin', admin);
+    formData.append('editar', editar);
 
     // Usar axiosInstance para hacer la petición
-    axiosInstance.put(`/updateUser/${currentUserId}`, data)
+    axiosInstance.put('/updateUser', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
     .then(response => {
         return response.data;
     })
