@@ -1,4 +1,5 @@
 import API_BASE_URL from '../config.js';
+import { authService } from '../auth-service.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener elementos del DOM
@@ -10,13 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('selectAll');
     const usuariosList = document.getElementById('usuariosList');
     
-    // Obtener token de autenticación
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error('No token found');
-        window.location.replace('/Dashboard CAA/Front-workspace/login/login.html');
+    // Verificar autenticación
+    if (!authService.isAuthenticated()) {
+        authService.redirectToLogin();
         return;
     }
+    
+    // Obtener token de autenticación
+    const token = authService.getToken();
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     
     // Event listeners

@@ -1,11 +1,15 @@
 import API_BASE_URL from "../config.js";
+import { authService } from '../auth-service.js';
 
 // Verificar autenticación
-const token = localStorage.getItem('token');
-if (!token) {
-    console.error('No token found');
-    window.location.replace('../login/login.html');
+if (!authService.isAuthenticated()) {
+    authService.redirectToLogin();
+    // Si la redirección no funciona, el código no debería continuar
+    throw new Error('No authentication');
 }
+
+// Obtener token de autenticación
+const token = authService.getToken();
 const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
 // Elemento donde se mostrarán las notas

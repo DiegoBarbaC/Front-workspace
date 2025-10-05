@@ -964,6 +964,23 @@ body.dark .drag-handle {
     font-size: 1.2em;
 }
 
+.forgot-password {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.forgot-password a {
+    color: var(--dark-grey);
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: var(--blue);
+    text-decoration: underline;
+}
+
 /* Dark mode styles for login */
 body.dark .login-box {
     background: var(--dark);

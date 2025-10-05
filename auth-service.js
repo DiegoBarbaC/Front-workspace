@@ -42,6 +42,13 @@ export const authService = {
         localStorage.removeItem('editar');
     },
     
+    // Redirigir al login cuando no hay autenticación
+    redirectToLogin() {
+        console.error('No token found');
+        // Usar una ruta absoluta desde la raíz del sitio
+        window.location.replace(window.location.origin + '/login/login.html');
+    },
+    
     // Verificar si el usuario tiene rol de administrador
     isAdmin() {
         return localStorage.getItem('admin') === 'true';

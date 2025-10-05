@@ -102,7 +102,7 @@ axiosInstance.interceptors.response.use(
                 if (!refreshToken) {
                     // Si no hay refresh token, redirigir al login
                     clearTokens();
-                    window.location.href = '/login/login.html';
+                    window.location.href = window.location.origin + '/login/login.html';
                     return Promise.reject(error);
                 }
 
@@ -128,14 +128,14 @@ axiosInstance.interceptors.response.use(
                 } else {
                     // Si no se pudo renovar, redirigir al login
                     clearTokens();
-                    window.location.href = '/login/login.html';
+                    window.location.href = window.location.origin + '/login/login.html';
                     return Promise.reject(new Error('No se pudo renovar el token'));
                 }
             } catch (refreshError) {
                 // Si hay error al renovar, redirigir al login
                 isRefreshing = false;
                 clearTokens();
-                window.location.href = '/login/login.html';
+                window.location.href = window.location.origin + '/login/login.html';
                 return Promise.reject(refreshError);
             }
         }
@@ -177,7 +177,8 @@ const authService = {
         } finally {
             // Siempre limpiar tokens locales
             clearTokens();
-            window.location.href = '/login/login.html';
+            // Usar una ruta absoluta desde la raíz del sitio
+            window.location.href = window.location.origin + '/login/login.html';
         }
     },
     
@@ -191,6 +192,22 @@ const authService = {
     
     canEdit: () => {
         return localStorage.getItem('editar') === 'true';
+    },
+    
+    // Función para solicitar recuperación de contraseña
+    requestPasswordRecovery: async (email) => {
+        try {
+            const response = await axiosInstance.post('/request-password-reset', { email });
+            return { 
+                success: true,
+                message: response.data.message || 'Se ha enviado un correo de recuperación'
+            };
+        } catch (error) {
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'Error al solicitar recuperación de contraseña' 
+            };
+        }
     }
 };
 

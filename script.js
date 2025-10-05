@@ -69,7 +69,7 @@ async function loadCardsFromAPI() {
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
-            window.location.replace('login/login.html');
+            window.location.replace(window.location.origin + '/login/login.html');
             return;
         }
 
@@ -154,7 +154,7 @@ async function saveCardOrder() {
         if (result.isConfirmed) {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = 'login/login.html';
+                window.location.href = window.location.origin + '/login/login.html';
                 return;
             }
 
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay token
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.replace('login/login.html');
+        window.location.replace(window.location.origin + '/login/login.html');
         return;
     }
     const isAdmin = localStorage.getItem('admin') === 'true';
@@ -355,13 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Limpiar el token del localStorage
-                localStorage.removeItem('token');
-                
-                // Redirigir al login
-                //ruta absoluta
-                //window.location.href = 'login/login.html';
-                window.location.reload();
+                // Usar el servicio de autenticación para cerrar sesión
+                authService.logout();
             }
         });
     }
