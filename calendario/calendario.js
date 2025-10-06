@@ -324,21 +324,194 @@ async function handleCreateEvent(event) {
 }
 
 // Funciones para el modal
-function openCreateModal() {
-    const modal = document.getElementById('createModal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
-        console.log('Modal abierto');
-    } else {
-        console.error('No se encontró el modal');
+async function openCreateModal() {
+    try {
+        // Cargar usuarios disponibles
+        const { data: users } = await axiosInstance.get('/getUsersForNotes');
+        console.log('Usuarios cargados:', users);
+        
+        // Verificar que users sea un array
+        if (!Array.isArray(users) || users.length === 0) {
+            throw new Error('No se encontraron usuarios');
+        }
+        
+        // Obtener el ID del usuario actual
+        const token = localStorage.getItem('token');
+        const currentUserId = getUserIdFromToken(token);
+        console.log('ID del usuario actual:', currentUserId);
+        
+        // Crear checkboxes HTML para los usuarios (excepto el usuario actual)
+        const usersCheckboxes = users
+            .filter(user => {
+                console.log('Comparando:', user._id, 'con', currentUserId);
+                return user._id !== currentUserId;
+            })
+            .map(user => {
+                const userId = user._id;
+                const userEmail = user.email || user.nombre || userId;
+                console.log('Generando checkbox para:', userId, userEmail);
+                return `
+                    <div class="usuario-item" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px; padding: 8px; border-bottom: 1px solid #eee; width: 100% !important;">
+                        <input type="checkbox" id="user-${userId}" value="${userId}" style="cursor: pointer; flex-shrink: 0 !important; width: auto !important;">
+                        <label for="user-${userId}" style="cursor: pointer !important; flex: 1 1 auto !important; margin: 0 !important; display: inline-block !important; white-space: normal !important; word-break: normal !important; overflow: visible !important; min-width: 0 !important; max-width: 100% !important;">${userEmail}</label>
+                    </div>
+                `;
+            }).join('');
+        
+        // Mostrar modal con SweetAlert2
+        const { value: formValues } = await Swal.fire({
+            title: 'Crear Nuevo Evento',
+            html: `
+                <div style="text-align: left;">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="titulo-evento" style="display: block; margin-bottom: 8px; font-weight: bold;">Título*:</label>
+                        <input type="text" id="titulo-evento" placeholder="Título del evento" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="descripcion-evento" style="display: block; margin-bottom: 8px; font-weight: bold;">Descripción:</label>
+                        <textarea id="descripcion-evento" placeholder="Descripción del evento" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="fecha-inicio" style="display: block; margin-bottom: 8px; font-weight: bold;">Fecha de Inicio*:</label>
+                        <input type="datetime-local" id="fecha-inicio" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="fecha-fin" style="display: block; margin-bottom: 8px; font-weight: bold;">Fecha de Fin*:</label>
+                        <input type="datetime-local" id="fecha-fin" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Participantes*:</label>
+                        <div id="usuarios-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+                            ${usersCheckboxes}
+                        </div>
+                        <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Selecciona los usuarios que participarán en el evento</p>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Crear Evento',
+            cancelButtonText: 'Cancelar',
+            width: '600px',
+            focusConfirm: false,
+            preConfirm: () => {
+                const titulo = document.getElementById('titulo-evento').value.trim();
+                const descripcion = document.getElementById('descripcion-evento').value.trim();
+                const fechaInicio = document.getElementById('fecha-inicio').value;
+                const fechaFin = document.getElementById('fecha-fin').value;
+                const checkboxes = document.querySelectorAll('#usuarios-list input[type="checkbox"]:checked');
+                const selectedUsers = Array.from(checkboxes).map(cb => cb.value);
+                
+                if (!titulo) {
+                    Swal.showValidationMessage('El título es obligatorio');
+                    return false;
+                }
+                
+                if (!fechaInicio || !fechaFin) {
+                    Swal.showValidationMessage('Las fechas de inicio y fin son obligatorias');
+                    return false;
+                }
+                
+                if (new Date(fechaInicio) > new Date(fechaFin)) {
+                    Swal.showValidationMessage('La fecha de inicio debe ser anterior a la fecha de fin');
+                    return false;
+                }
+                
+                if (selectedUsers.length === 0) {
+                    Swal.showValidationMessage('Debe seleccionar al menos un participante');
+                    return false;
+                }
+                
+                return { titulo, descripcion, fechaInicio, fechaFin, selectedUsers };
+            }
+        });
+        
+        if (formValues) {
+            await handleCreateEventFromSwal(formValues);
+        }
+    } catch (error) {
+        console.error('Error completo:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `No se pudo abrir el modal de creación: ${error.message}`
+        });
     }
 }
 
 function closeCreateModal() {
-    document.getElementById('createModal').style.display = 'none';
-    document.getElementById('createEventForm').reset();
-    document.body.classList.remove('modal-open');
+    // Esta función ya no se usa con SweetAlert2, pero la mantenemos por compatibilidad
+    console.log('closeCreateModal llamado - usando SweetAlert2 ahora');
+}
+
+// Función para extraer el ID del usuario del token
+function getUserIdFromToken(token) {
+    try {
+        // Remover 'Bearer ' si existe
+        const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+        // Obtener la parte de datos del token (la segunda parte)
+        const base64Url = cleanToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        return payload.identity || payload.sub || payload.id;
+    } catch (error) {
+        console.error('Error al decodificar el token:', error);
+        return null;
+    }
+}
+
+// Función para manejar la creación de eventos desde SweetAlert2
+async function handleCreateEventFromSwal(formValues) {
+    try {
+        if (!authService.isAuthenticated()) {
+            console.error('No token found');
+            window.location.replace('../login/login.html');
+            return;
+        }
+
+        const { titulo, descripcion, fechaInicio, fechaFin, selectedUsers } = formValues;
+
+        // Crear FormData
+        const formData = new FormData();
+        formData.append('titulo', titulo);
+        formData.append('descripcion', descripcion);
+        formData.append('fechaInicio', fechaInicio);
+        formData.append('fechaFin', fechaFin);
+        selectedUsers.forEach(usuario => {
+            formData.append('usuarios', usuario);
+        });
+        
+        console.log('Datos del evento a enviar (FormData):', [...formData.entries()]);
+
+        // Enviar datos al servidor usando axiosInstance
+        const { data: responseData } = await axiosInstance.post('/addEvent', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: 'Evento creado correctamente',
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => {
+            window.location.reload();
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo crear el evento'
+        });
+    }
 }
 
 // Función para mostrar detalles del evento
