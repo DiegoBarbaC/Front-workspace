@@ -57,6 +57,16 @@ function createNoteCard(note) {
         editNoteTitle(noteId, note.titulo);
     };
     
+    // Botón de agregar usuarios
+    const addUsersButton = document.createElement('button');
+    addUsersButton.className = 'note-btn add-users-btn';
+    addUsersButton.innerHTML = '<i class="bx bx-user-plus"></i>';
+    addUsersButton.title = 'Agregar usuarios';
+    addUsersButton.onclick = (e) => {
+        e.stopPropagation(); // Evitar que se propague el clic a la tarjeta
+        addUsersToNote(noteId, note.titulo);
+    };
+    
     // Botón de eliminar
     const deleteButton = document.createElement('button');
     deleteButton.className = 'note-btn delete-btn';
@@ -69,6 +79,7 @@ function createNoteCard(note) {
     
     // Agregar botones al contenedor
     buttonsContainer.appendChild(editButton);
+    buttonsContainer.appendChild(addUsersButton);
     buttonsContainer.appendChild(deleteButton);
     
     // Agregar elementos a la tarjeta
@@ -266,9 +277,112 @@ async function deleteNote(noteId, noteTitle) {
     }
 }
 
+// Función para agregar usuarios a una nota
+async function addUsersToNote(noteId, noteTitle) {
+    try {
+        // Primero, obtener la lista de usuarios disponibles
+        const usersResponse = await fetch(`${API_BASE_URL}/getUsersForNotes`, {
+            headers: {
+                'Authorization': authToken
+            }
+        });
+        
+        if (!usersResponse.ok) {
+            throw new Error('Error al cargar usuarios');
+        }
+        
+        const users = await usersResponse.json();
+        
+        // Obtener la información de la nota para saber qué usuarios ya están
+        const noteResponse = await fetch(`${API_BASE_URL}/getNote/${noteId}`, {
+            headers: {
+                'Authorization': authToken
+            }
+        });
+        
+        if (!noteResponse.ok) {
+            throw new Error('Error al cargar la nota');
+        }
+        
+        const noteData = await noteResponse.json();
+        const currentUsers = noteData.usuarios || [];
+        
+        // Crear checkboxes HTML para los usuarios
+        const usersCheckboxes = users.map(user => {
+            const isChecked = currentUsers.includes(user._id) ? 'checked' : '';
+            return `
+                <div class="usuario-item" style="display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid #eee;">
+                    <input type="checkbox" id="user-${user._id}" value="${user._id}" ${isChecked} style="cursor: pointer;">
+                    <label for="user-${user._id}" style="cursor: pointer; flex: 1; margin: 0;">${user.email || user.nombre || user._id}</label>
+                </div>
+            `;
+        }).join('');
+        
+        // Mostrar modal con lista de usuarios
+        const { value: confirmed } = await Swal.fire({
+            title: `Agregar usuarios a "${noteTitle}"`,
+            html: `
+                <div style="text-align: left;">
+                    <div id="usuarios-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+                        ${usersCheckboxes}
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Los usuarios marcados ya están en la nota</p>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar cambios',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const checkboxes = document.querySelectorAll('#usuarios-list input[type="checkbox"]:checked');
+                const selected = Array.from(checkboxes).map(cb => cb.value);
+                return selected;
+            }
+        });
+        
+        if (confirmed) {
+            // Llamar al endpoint para actualizar usuarios (envía todos los seleccionados)
+            const addResponse = await fetch(`${API_BASE_URL}/updateNote/${noteId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': authToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarios: confirmed
+                })
+            });
+            
+            if (!addResponse.ok) {
+                const errorData = await addResponse.json();
+                throw new Error(errorData.message || 'Error al actualizar usuarios');
+            }
+            
+            // Recargar las notas para mostrar los cambios
+            await loadNotes();
+            
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuarios actualizados',
+                text: `La nota ahora tiene ${confirmed.length} usuario(s)`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'No se pudieron agregar los usuarios'
+        });
+    }
+}
+
 // Exponer las funciones al ámbito global para que puedan ser llamadas desde el HTML
 window.editNoteTitle = editNoteTitle;
 window.deleteNote = deleteNote;
+window.addUsersToNote = addUsersToNote;
 
 // Cargar las notas cuando se carga la página
 document.addEventListener('DOMContentLoaded', loadNotes);

@@ -4,12 +4,6 @@ import { authService } from '../auth-service.js';
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener elementos del DOM
     const createNoteBtn = document.getElementById('btn-create-note');
-    const createNoteModal = document.getElementById('createNoteModal');
-    const closeCreateModalBtn = document.getElementById('close-create-modal');
-    const cancelCreateModalBtn = document.getElementById('cancel-create-modal');
-    const createNoteForm = document.getElementById('createNoteForm');
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const usuariosList = document.getElementById('usuariosList');
     
     // Verificar autenticación
     if (!authService.isAuthenticated()) {
@@ -21,145 +15,96 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = authService.getToken();
     const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     
-    // Event listeners
+    // Event listener para el botón de crear nota
     if (createNoteBtn) {
         createNoteBtn.addEventListener('click', openCreateModal);
     }
     
-    if (closeCreateModalBtn) {
-        closeCreateModalBtn.addEventListener('click', closeCreateModal);
-    }
-    
-    if (cancelCreateModalBtn) {
-        cancelCreateModalBtn.addEventListener('click', closeCreateModal);
-    }
-    
-    if (createNoteForm) {
-        createNoteForm.addEventListener('submit', handleCreateNote);
-    }
-    
-    // Cargar usuarios al iniciar
-    loadUsers();
-    
-    // Función para abrir el modal de creación de notas
-    function openCreateModal() {
-        if (createNoteModal) {
-            createNoteModal.style.display = 'block';
-            // Asegurarse de que los usuarios estén cargados
-            if (!usuariosList.children.length) {
-                loadUsers();
-            }
-        }
-    }
-    
-    // Función para cerrar el modal de creación de notas
-    function closeCreateModal() {
-        if (createNoteModal) {
-            createNoteModal.style.display = 'none';
-            // Limpiar el formulario
-            if (createNoteForm) {
-                createNoteForm.reset();
-            }
-        }
-    }
-    
-    // Función para cargar la lista de usuarios
-    async function loadUsers() {
+    // Función para abrir el modal de creación de notas con SweetAlert2
+    async function openCreateModal() {
         try {
-            
-            
+            // Cargar usuarios disponibles
             const response = await fetch(`${API_BASE_URL}/getUsersForNotes`, {
                 headers: {
                     'Authorization': authToken
                 }
             });
             
-            console.log('Respuesta del servidor:', response.status, response.statusText);
-            
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Error en la respuesta:', errorText);
-                throw new Error(`Error al cargar usuarios: ${response.status} ${response.statusText}`);
+                throw new Error('Error al cargar usuarios');
             }
             
             const users = await response.json();
-            console.log('Usuarios recibidos:', users);
-            
-            // Limpiar la lista
-            usuariosList.innerHTML = '';
             
             // Obtener el ID del usuario actual
             const currentUserId = getUserIdFromToken(token);
-            console.log('ID del usuario actual:', currentUserId);
             
-            // Verificar si hay usuarios para mostrar
-            if (!Array.isArray(users) || users.length === 0) {
-                console.log('No hay usuarios para mostrar o no es un array');
-                const noUsersMessage = document.createElement('div');
-                noUsersMessage.textContent = 'No hay usuarios disponibles';
-                usuariosList.appendChild(noUsersMessage);
-                return;
-            }
+            // Crear checkboxes HTML para los usuarios (excepto el usuario actual)
+            const usersCheckboxes = users
+                .filter(user => user._id !== currentUserId)
+                .map(user => {
+                    return `
+                        <div class="usuario-item" style="display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid #eee;">
+                            <input type="checkbox" id="user-${user._id}" value="${user._id}" style="cursor: pointer;">
+                            <label for="user-${user._id}" style="cursor: pointer; flex: 1; margin: 0;">${user.email || user.nombre || user._id}</label>
+                        </div>
+                    `;
+                }).join('');
             
-            // Agregar cada usuario a la lista (excepto el usuario actual)
-            users.forEach(user => {
-                console.log('Procesando usuario:', user);
-                // No mostrar al usuario actual en la lista de participantes
-                if (user._id !== currentUserId) {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'usuario-item';
+            // Mostrar modal con SweetAlert2
+            const { value: formValues } = await Swal.fire({
+                title: 'Crear Nueva Nota',
+                html: `
+                    <div style="text-align: left;">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="titulo-nota" style="display: block; margin-bottom: 8px; font-weight: bold;">Título*:</label>
+                            <input type="text" id="titulo-nota" placeholder="Título de la nota" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold;">Participantes:</label>
+                            <div id="usuarios-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+                                ${usersCheckboxes}
+                            </div>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Selecciona los usuarios que tendrán acceso a esta nota</p>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Crear Nota',
+                cancelButtonText: 'Cancelar',
+                width: '600px',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const tituloInput = document.getElementById('titulo-nota');
+                    const titulo = tituloInput ? tituloInput.value.trim() : '';
+                    const checkboxes = document.querySelectorAll('#usuarios-list input[type="checkbox"]:checked');
+                    const selectedUsers = Array.from(checkboxes).map(cb => cb.value);
                     
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = `user-${user._id}`;
-                    checkbox.value = user._id;
-                    checkbox.name = 'usuarios';
+                    if (!titulo) {
+                        Swal.showValidationMessage('El título es obligatorio');
+                        return false;
+                    }
                     
-                    const label = document.createElement('label');
-                    label.htmlFor = `user-${user._id}`;
-                    label.textContent = user.email || user.nombre || user._id;
-                    
-                    userItem.appendChild(checkbox);
-                    userItem.appendChild(label);
-                    
-                    usuariosList.appendChild(userItem);
+                    return { titulo, selectedUsers };
                 }
             });
             
+            if (formValues) {
+                await handleCreateNote(formValues.titulo, formValues.selectedUsers);
+            }
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudieron cargar los usuarios'
+                text: 'No se pudo abrir el modal de creación'
             });
         }
     }
     
-    // Función para seleccionar/deseleccionar todos los usuarios
-    window.toggleAllUsers = function() {
-        const checkboxes = usuariosList.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAllCheckbox.checked;
-        });
-    };
-    
     // Función para manejar la creación de una nota
-    async function handleCreateNote(event) {
-        event.preventDefault();
-        
+    async function handleCreateNote(titulo, selectedUsers) {
         try {
-            const titulo = document.getElementById('titulo').value;
-            
-            if (!titulo) {
-                throw new Error('El título es obligatorio');
-            }
-            
-            // Obtener usuarios seleccionados
-            const selectedUsers = Array.from(
-                document.querySelectorAll('#usuariosList input[type="checkbox"]:checked')
-            ).map(checkbox => checkbox.value);
-            
             // Obtener el ID del usuario actual
             const currentUserId = getUserIdFromToken(token);
             
@@ -188,11 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json();
                 console.log('Nota creada:', data);
-
-                // Cerrar el modal
-                closeCreateModal();
                 
-                // Mostrar mensaje de éxito
+                // Mostrar mensaje de éxito y redirigir
                 Swal.fire({
                     icon: 'success',
                     title: 'Nota creada',

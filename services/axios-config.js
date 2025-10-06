@@ -197,7 +197,7 @@ const authService = {
     // Función para solicitar recuperación de contraseña
     requestPasswordRecovery: async (email) => {
         try {
-            const response = await axiosInstance.post('/request-password-reset', { email });
+            const response = await axiosInstance.post('/forgot-password', { email });
             return { 
                 success: true,
                 message: response.data.message || 'Se ha enviado un correo de recuperación'
@@ -205,7 +205,7 @@ const authService = {
         } catch (error) {
             return { 
                 success: false, 
-                message: error.response?.data?.message || 'Error al solicitar recuperación de contraseña' 
+                message: error.response?.data?.message || error.response?.data?.msg || 'Error al solicitar recuperación de contraseña' 
             };
         }
     }
