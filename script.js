@@ -188,15 +188,34 @@ async function saveCardOrder() {
 }
 
 // Initialize Sortable
+let sortableInstance = null;
+
+// Función para actualizar la visibilidad de los drag handles
+function updateDragHandlesVisibility() {
+    const toggleDragMode = document.getElementById('toggle-drag-mode');
+    const dragHandles = document.querySelectorAll('.drag-handle');
+    const isEnabled = toggleDragMode && toggleDragMode.checked;
+    
+    dragHandles.forEach(handle => {
+        handle.style.display = isEnabled ? 'block' : 'none';
+    });
+}
+
 function initializeSortable() {
     const grid = document.getElementById('sortable-grid');
     if (!grid) return;
 
     let originalOrder = [];
 
-    Sortable.create(grid, {
+    // Si ya existe una instancia, destruirla primero
+    if (sortableInstance) {
+        sortableInstance.destroy();
+    }
+
+    sortableInstance = Sortable.create(grid, {
         animation: 150,
         handle: '.drag-handle',
+        disabled: true, // Inicialmente deshabilitado
         onStart: function(evt) {
             // Guardar el orden original antes de mover
             originalOrder = Array.from(grid.children).map(card => ({
@@ -237,6 +256,26 @@ function initializeSortable() {
             }
         }
     });
+
+    // Event listener para el toggle (solo agregar una vez)
+    const toggleDragMode = document.getElementById('toggle-drag-mode');
+    if (toggleDragMode && !toggleDragMode.hasAttribute('data-listener-added')) {
+        toggleDragMode.setAttribute('data-listener-added', 'true');
+        toggleDragMode.addEventListener('change', function() {
+            if (sortableInstance) {
+                sortableInstance.option('disabled', !this.checked);
+                updateDragHandlesVisibility();
+            }
+        });
+    }
+
+    // Actualizar el estado del sortable según el toggle
+    if (toggleDragMode && toggleDragMode.checked) {
+        sortableInstance.option('disabled', false);
+    }
+
+    // Actualizar visibilidad de los drag handles según el estado del toggle
+    updateDragHandlesVisibility();
 }
 
 // Función para eliminar una sección del dashboard
