@@ -100,20 +100,12 @@
 		<main>
 			<div class="head-title">
 				<div class="left">
-					<h1>Chatbot</h1>
-					
+					<!-- <h1>Chatbot</h1> -->
 				</div>
-				
 			</div>
-			
-				
-				
-				
-			</div>
-			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-			<!-- Add Sortable.js library -->
-			<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+			<!-- Chat Container -->
+			<div id="chat-embed-container" style="width: 50%; height: calc((100vh - 200px) / 2); min-height: 300px; margin-top: 20px; position: relative;"></div>
 
 		</main>
 		<!-- MAIN -->
@@ -123,5 +115,65 @@
 	<!-- Axios CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script src="../script.js" type="module"></script>
+
+	<!-- AnythingLLM Native Integration -->
+	<script
+		data-embed-id="00d230ae-5b92-4258-abb3-3509ff5b6887"
+		data-base-api-url="https://leonelbot.anahuacmayab.mx/api/embed"
+		data-open-on-load="on"
+		data-window-height="85%"
+		data-window-width="80%"
+		data-no-sponsor="true"
+		src="https://leonelbot.anahuacmayab.mx/embed/anythingllm-chat-widget.min.js">
+	</script>
+
+	<style>
+		/* Force native integration - hide bubble button completely */
+		[data-anythingllm-chat-button] {
+			display: none !important;
+			visibility: hidden !important;
+			opacity: 0 !important;
+			pointer-events: none !important;
+		}
+		
+		/* Force chat window to be static and embedded */
+		[data-anythingllm-chat-window] {
+			position: static !important;
+			width: 50% !important;
+			height: 50% !important;
+			max-width: none !important;
+			max-height: none !important;
+			min-height: 300px !important;
+			border-radius: 12px !important;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+			transform: none !important;
+			margin: 0 !important;
+			left: auto !important;
+			right: auto !important;
+			bottom: auto !important;
+			top: auto !important;
+		}
+	</style>
+
+	<script>
+		// Force chat to open and move to container
+		window.addEventListener('DOMContentLoaded', function() {
+			const checkAndMove = () => {
+				const chatWindow = document.querySelector('[data-anythingllm-chat-window]');
+				const container = document.getElementById('chat-embed-container');
+				
+				if (chatWindow && container && !container.contains(chatWindow)) {
+					container.appendChild(chatWindow);
+					console.log('Chat moved to container');
+				} else if (!chatWindow) {
+					setTimeout(checkAndMove, 100);
+				}
+			};
+			
+			setTimeout(checkAndMove, 500);
+		});
+	</script>
+
 </body>
+
 </html>
