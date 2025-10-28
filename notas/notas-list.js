@@ -154,7 +154,14 @@ document.querySelector('.create-note-btn').addEventListener('click', async (e) =
         });
 
         if (!response.ok) {
-            throw new Error('Error al crear la nota');
+            let errorMessage = 'Error al crear la nota';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.msg || errorData.message || errorMessage;
+            } catch (parseError) {
+                console.error('Error al parsear respuesta de error:', parseError);
+            }
+            throw new Error(errorMessage);
         }
 
         const result = await response.json();
@@ -165,8 +172,8 @@ document.querySelector('.create-note-btn').addEventListener('click', async (e) =
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'No se pudo crear la nota'
+            title: 'Error al crear la nota',
+            text: error.message || 'No se pudo crear la nota'
         });
     }
 });
@@ -202,7 +209,14 @@ async function editNoteTitle(noteId, currentTitle) {
             });
 
             if (!response.ok) {
-                throw new Error('Error al actualizar el título');
+                let errorMessage = 'Error al actualizar el título';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.msg || errorData.message || errorMessage;
+                } catch (parseError) {
+                    console.error('Error al parsear respuesta de error:', parseError);
+                }
+                throw new Error(errorMessage);
             }
 
             // Recargar las notas para mostrar el cambio
@@ -220,8 +234,8 @@ async function editNoteTitle(noteId, currentTitle) {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'No se pudo actualizar el título de la nota'
+                title: 'Error al actualizar el título',
+                text: error.message || 'No se pudo actualizar el título de la nota'
             });
         }
     }
@@ -252,7 +266,14 @@ async function deleteNote(noteId, noteTitle) {
             });
 
             if (!response.ok) {
-                throw new Error('Error al eliminar la nota');
+                let errorMessage = 'Error al eliminar la nota';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.msg || errorData.message || errorMessage;
+                } catch (parseError) {
+                    console.error('Error al parsear respuesta de error:', parseError);
+                }
+                throw new Error(errorMessage);
             }
 
             // Recargar las notas para reflejar el cambio
@@ -270,8 +291,8 @@ async function deleteNote(noteId, noteTitle) {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'No se pudo eliminar la nota'
+                title: 'Error al eliminar la nota',
+                text: error.message || 'No se pudo eliminar la nota'
             });
         }
     }
@@ -353,8 +374,14 @@ async function addUsersToNote(noteId, noteTitle) {
             });
             
             if (!addResponse.ok) {
-                const errorData = await addResponse.json();
-                throw new Error(errorData.message || 'Error al actualizar usuarios');
+                let errorMessage = 'Error al actualizar usuarios';
+                try {
+                    const errorData = await addResponse.json();
+                    errorMessage = errorData.msg || errorData.message || errorMessage;
+                } catch (parseError) {
+                    console.error('Error al parsear respuesta de error:', parseError);
+                }
+                throw new Error(errorMessage);
             }
             
             // Recargar las notas para mostrar los cambios
@@ -373,8 +400,8 @@ async function addUsersToNote(noteId, noteTitle) {
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: error.message || 'No se pudieron agregar los usuarios'
+            title: 'Error al actualizar usuarios',
+            text: error.message || 'No se pudieron actualizar los usuarios'
         });
     }
 }

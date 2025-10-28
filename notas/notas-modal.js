@@ -127,8 +127,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.msg || 'Error al crear la nota');
+                    let errorMessage = 'Error al crear la nota';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.msg || errorData.message || errorMessage;
+                    } catch (parseError) {
+                        console.error('Error al parsear respuesta de error:', parseError);
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
@@ -151,8 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error al crear la nota:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error',
-                    text: error.message
+                    title: 'Error al crear la nota',
+                    text: error.message || 'No se pudo crear la nota'
                 });
             }
 

@@ -102,11 +102,19 @@ async function saveNoteContent() {
     } catch (error) {
         console.error('Error al guardar nota:', error);
         
+        // Extraer mensaje de error de la respuesta si existe
+        let errorMessage = 'No se pudo guardar la nota';
+        if (error.response && error.response.data) {
+            errorMessage = error.response.data.msg || error.response.data.message || errorMessage;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
         // Mostrar mensaje de error
         Swal.fire({
             icon: 'error',
             title: 'Error al guardar',
-            text: error.message || 'No se pudo guardar la nota'
+            text: errorMessage
         });
     } finally {
         isSaving = false;
