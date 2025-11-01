@@ -265,16 +265,17 @@ async function handleCreateEvent(event) {
             .map(checkbox => checkbox.value);
 
         // Validar que al menos un usuario esté seleccionado
-        if (usuariosSeleccionados.length === 0) {
+        // Validar fechas
+        const now = new Date();
+        now.setSeconds(0, 0); // Redondear al minuto actual
+        if (new Date(fechaInicio) < now) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Debe seleccionar al menos un usuario'
+                text: 'La fecha de inicio no puede estar en el pasado'
             });
             return;
         }
-
-        // Validar fechas
         if (new Date(fechaInicio) > new Date(fechaFin)) {
             Swal.fire({
                 icon: 'error',
@@ -411,13 +412,16 @@ async function openCreateModal() {
                     return false;
                 }
                 
-                if (new Date(fechaInicio) > new Date(fechaFin)) {
-                    Swal.showValidationMessage('La fecha de inicio debe ser anterior a la fecha de fin');
+                // Validar que la fecha de inicio no esté en el pasado
+                const now = new Date();
+                now.setSeconds(0, 0); // Redondear al minuto actual
+                if (new Date(fechaInicio) < now) {
+                    Swal.showValidationMessage('La fecha de inicio no puede estar en el pasado');
                     return false;
                 }
                 
-                if (selectedUsers.length === 0) {
-                    Swal.showValidationMessage('Debe seleccionar al menos un participante');
+                if (new Date(fechaInicio) > new Date(fechaFin)) {
+                    Swal.showValidationMessage('La fecha de inicio debe ser anterior a la fecha de fin');
                     return false;
                 }
                 
