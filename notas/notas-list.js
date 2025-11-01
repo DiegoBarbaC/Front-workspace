@@ -8,6 +8,26 @@ if (!authService.isAuthenticated()) {
     throw new Error('No authentication');
 }
 
+// Función para extraer el ID del usuario del token
+function getUserIdFromToken(token) {
+    try {
+        // Remover 'Bearer ' si existe
+        const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+        // Obtener la parte de datos del token (la segunda parte)
+        const base64Url = cleanToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        return payload.identity || payload.sub || payload.id;
+    } catch (error) {
+        console.error('Error al decodificar el token:', error);
+        return null;
+    }
+}
+
 // Obtener token de autenticación
 const token = authService.getToken();
 const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
@@ -301,6 +321,10 @@ async function deleteNote(noteId, noteTitle) {
 // Función para agregar usuarios a una nota
 async function addUsersToNote(noteId, noteTitle) {
     try {
+        // Obtener el ID del usuario actual
+        const currentUserId = getUserIdFromToken(token);
+        console.log('ID del usuario actual:', currentUserId);
+        
         // Primero, obtener la lista de usuarios disponibles
         const usersResponse = await fetch(`${API_BASE_URL}/getUsersForNotes`, {
             headers: {
@@ -312,7 +336,13 @@ async function addUsersToNote(noteId, noteTitle) {
             throw new Error('Error al cargar usuarios');
         }
         
-        const users = await usersResponse.json();
+        const allUsers = await usersResponse.json();
+        
+        // Filtrar para excluir al usuario actual
+        const users = allUsers.filter(user => {
+            console.log('Comparando:', user._id, 'con', currentUserId);
+            return user._id !== currentUserId;
+        });
         
         // Obtener la información de la nota para saber qué usuarios ya están
         const noteResponse = await fetch(`${API_BASE_URL}/getNote/${noteId}`, {

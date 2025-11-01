@@ -538,12 +538,19 @@ async function showEventDetails(event) {
         const users = JSON.parse(data.usuarios);
         const eventUsers = event.extendedProps.usuarios || [];
         
-        // Agregar checkboxes para cada usuario
+        // Obtener el ID del usuario actual
+        const token = localStorage.getItem('token');
+        const currentUserId = getUserIdFromToken(token);
+        console.log('ID del usuario actual:', currentUserId);
+        
+        // Agregar checkboxes para cada usuario (excepto el usuario actual)
         users.forEach(user => {
+            const userId = user._id.$oid || user._id;
+            if (userId === currentUserId) return;  // No mostrar el checkbox del usuario actual
+            
             const div = document.createElement('div');
             div.className = 'usuario-checkbox';
             
-            const userId = user._id.$oid || user._id;
             const isChecked = eventUsers.some(eventUser => 
                 (eventUser.$oid || eventUser) === userId
             );
